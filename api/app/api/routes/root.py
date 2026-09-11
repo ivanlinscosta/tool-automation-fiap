@@ -19,7 +19,7 @@ async def root(
 ) -> dict[str, str]:
     _ = (x_student_id, x_request_id)
     return {
-        "service": "FlowDesk Lab API",
+        "service": "FIAP Student Desk Lab API",
         "docs": "/docs",
         "openapi": "/openapi.json",
         "health": "/health",

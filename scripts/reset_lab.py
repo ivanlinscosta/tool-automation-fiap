@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 
 
-DB_PATH = Path(__file__).resolve().parent.parent / "flowdesk.db"
+DB_PATH = Path(__file__).resolve().parent.parent / "fiap_student_desk.db"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Delete the FlowDesk Lab SQLite database so seed data is recreated on next startup.")
+    parser = argparse.ArgumentParser(description="Delete the FIAP Student Desk Lab SQLite database so seed data is recreated on next startup.")
     _ = parser.add_argument("--force", action="store_true", help="Skip the confirmation prompt.")
     return parser.parse_args()
 

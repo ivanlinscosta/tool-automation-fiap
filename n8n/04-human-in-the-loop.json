@@ -1,10 +1,10 @@
 {
-  "name": "FlowDesk Lab - 04 Human in the Loop",
+  "name": "FIAP Student Desk Lab - 04 Human in the Loop",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "flowdesk-access-request",
+        "path": "fiap-approval-workflow",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -13,15 +13,15 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -900,
+        -920,
         0
       ],
-      "webhookId": "flowdesk-access-request"
+      "webhookId": "fiap-approval-workflow"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "=http://localhost:8000/api/v1/employees/{{$json.body.employee_id}}",
+        "url": "=http://localhost:8000/api/v1/students/{{$json.body.student_id}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -31,18 +31,18 @@
             },
             {
               "name": "X-Request-ID",
-              "value": "n8n-hitl-employee"
+              "value": "n8n-hitl-student"
             }
           ]
         },
         "options": {}
       },
-      "id": "hitl-http-employee-01",
-      "name": "Get Employee",
+      "id": "hitl-http-student-01",
+      "name": "Get Student",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -620,
+        -640,
         0
       ]
     },
@@ -58,18 +58,24 @@
             },
             {
               "id": "hitl-assign-02",
-              "name": "justification",
-              "value": "Maintenance window for critical patch deployment",
+              "name": "request_type",
+              "value": "reissue_student_card",
               "type": "string"
             },
             {
               "id": "hitl-assign-03",
+              "name": "justification",
+              "value": "Perdi o cartão estudantil e preciso acessar o campus para avaliação presencial.",
+              "type": "string"
+            },
+            {
+              "id": "hitl-assign-04",
               "name": "credentialsId",
               "value": "YOUR_CREDENTIAL_ID",
               "type": "string"
             },
             {
-              "id": "hitl-assign-04",
+              "id": "hitl-assign-05",
               "name": "credentialsName",
               "value": "YOUR_CREDENTIAL_NAME",
               "type": "string"
@@ -83,16 +89,16 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -340,
+        -360,
         0
       ],
-      "notes": "Replace this Set node with a real LLM node if available. Placeholder credentials: YOUR_CREDENTIAL_ID / YOUR_CREDENTIAL_NAME.",
+      "notes": "Substitua por um classificador real se quiser derivar risco dinamicamente.",
       "notesInFlow": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:8000/api/v1/access-requests",
+        "url": "http://localhost:8000/api/v1/approval-requests",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -112,15 +118,15 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"resource\": $node['Webhook'].json.body.resource, \"justification\": $json.justification, \"risk\": $json.risk }",
+        "jsonBody": "={ \"student_id\": $node[\"Webhook\"].json.body.student_id, \"request_type\": $json.request_type, \"justification\": $json.justification, \"risk\": $json.risk }",
         "options": {}
       },
-      "id": "hitl-http-access-create-01",
-      "name": "Create Access Request",
+      "id": "hitl-http-approval-create-01",
+      "name": "Create Approval Request",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -40,
+        -60,
         0
       ]
     },
@@ -151,7 +157,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        260,
+        240,
         0
       ]
     },
@@ -165,14 +171,14 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        560,
+        540,
         -100
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=http://localhost:8000/api/v1/access-requests/{{$node['Create Access Request'].json.request_id}}/approve",
+        "url": "=http://localhost:8000/api/v1/approval-requests/{{$node[\"Create Approval Request\"].json.approval_id}}/decision",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -186,28 +192,28 @@
             },
             {
               "name": "X-Request-ID",
-              "value": "n8n-hitl-approve"
+              "value": "n8n-hitl-decision"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"approved_by\": \"professor@fiap.com.br\", \"decision\": \"approved\", \"decision_comment\": \"Approved in classroom simulation after human review.\" }",
+        "jsonBody": "={ \"decision\": \"approved\", \"approved_by\": \"tutor.lab@fiap.fake\", \"comment\": \"Aprovado na simulação após revisão humana.\" }",
         "options": {}
       },
-      "id": "hitl-http-access-approve-01",
-      "name": "Approve Access Request",
+      "id": "hitl-http-decision-01",
+      "name": "Post Approval Decision",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        860,
+        840,
         -100
       ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { status: 'auto-approved', request: $json } }}",
+        "responseBody": "={{ { status: 'auto_approved', student: $node['Get Student'].json, approval_request: $json } }}",
         "options": {}
       },
       "id": "hitl-respond-auto-01",
@@ -215,14 +221,14 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        560,
+        540,
         120
       ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { employee: $node['Get Employee'].json, risk_assessment: $node['Risk Classifier Placeholder'].json, access_request: $node['Create Access Request'].json, final_decision: $json } }}",
+        "responseBody": "={{ { student: $node['Get Student'].json, risk_assessment: $node['Risk Classifier Placeholder'].json, approval_request: $node['Create Approval Request'].json, final_decision: $json } }}",
         "options": {}
       },
       "id": "hitl-respond-final-01",
@@ -230,7 +236,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1160,
+        1140,
         -100
       ]
     }
@@ -241,14 +247,14 @@
       "main": [
         [
           {
-            "node": "Get Employee",
+            "node": "Get Student",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Employee": {
+    "Get Student": {
       "main": [
         [
           {
@@ -263,14 +269,14 @@
       "main": [
         [
           {
-            "node": "Create Access Request",
+            "node": "Create Approval Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Create Access Request": {
+    "Create Approval Request": {
       "main": [
         [
           {
@@ -303,14 +309,14 @@
       "main": [
         [
           {
-            "node": "Approve Access Request",
+            "node": "Post Approval Decision",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Approve Access Request": {
+    "Post Approval Decision": {
       "main": [
         [
           {
@@ -331,6 +337,6 @@
     "templateCredsSetupCompleted": false,
     "instanceId": "YOUR_N8N_INSTANCE_ID"
   },
-  "id": "flowdesk-workflow-04",
+  "id": "fiap-student-desk-workflow-04",
   "tags": []
 }

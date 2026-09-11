@@ -1,66 +1,45 @@
-# Classroom Scenarios
+# Classroom Scenarios: FIAP Student Desk Lab
+
+Este documento contém cenários didáticos para exercícios de classificação, busca em base de conhecimento e automação de solicitações.
 
 ## Como usar
+Cada cenário representa uma interação de um aluno. Os alunos devem configurar seus workflows para processar essas mensagens e chegar ao resultado esperado.
 
-Os cenários abaixo servem para exercícios de classificação, roteamento, priorização e abertura de tickets na FlowDesk Lab API.
+> **Nota:** Os campos "esperados" são referências pedagógicas. O comportamento real do LLM pode variar.
 
-> `categoria`, `impact`, `urgency` e `priority` abaixo representam **resultado pedagógico esperado**. Em fluxos com LLM, o resultado não é garantido e pode variar conforme prompt, contexto e estratégia de parsing.
+## Cenários de Exercício
 
-## Cenários
+| # | Mensagem do Aluno | student_id | Categoria | Intenção | Impacto/Urgência | Auto-resposta? | Artigo KB | Criar Request? | Depto |
+|---|-------------------|------------|-----------|----------|------------------|----------------|-----------|----------------|-------|
+| 01 | "Não consigo acessar o ambiente para enviar meu projeto" | STU001 | digital_learning | report_problem | high/high | Sim | KB001 | Não | Tecnologia Educacional |
+| 02 | "Preciso de uma declaração de matrícula para o estágio" | STU002 | academic_services | request_document | medium/low | Não | KB002 | Sim | Secretaria Acadêmica |
+| 03 | "Minha mensalidade está com valor diferente do contrato" | STU003 | finance | financial_question | medium/medium | Não | KB003 | Sim | Financeiro |
+| 04 | "Quero saber como funciona o programa de estágios" | STU004 | career | career_question | low/low | Sim | KB004 | Não | Carreiras |
+| 05 | "Meu acesso ao laboratório físico não está funcionando" | STU005 | campus_access | report_problem | high/medium | Sim | KB005 | Não | Infraestrutura |
+| 06 | "Como faço para trancar uma disciplina?" | STU006 | academic_services | ask_question | low/medium | Sim | KB006 | Não | Secretaria Acadêmica |
+| 07 | "Esqueci minha senha do e-mail institucional" | STU007 | digital_learning | report_problem | medium/high | Sim | KB007 | Não | TI Suporte |
+| 08 | "Onde vejo o calendário de provas do semestre?" | STU008 | academic_services | ask_question | low/low | Sim | KB008 | Não | Secretaria Acadêmica |
+| 09 | "Recebi uma cobrança indevida de biblioteca" | STU009 | finance | financial_question | low/medium | Não | KB009 | Sim | Financeiro |
+| 10 | "Quero atualizar meu endereço no cadastro" | STU010 | academic_services | report_problem | low/low | Não | KB010 | Sim | Secretaria Acadêmica |
+| 11 | "O Wi-Fi do campus está muito lento hoje" | STU011 | campus_access | report_problem | medium/medium | Sim | KB011 | Não | TI Suporte |
+| 12 | "Preciso de ajuda com o conteúdo da aula de Python" | STU012 | digital_learning | ask_question | low/low | Sim | KB012 | Não | Tutoria |
+| 13 | "Como solicito o passe escolar (SPTrans)?" | STU013 | academic_services | request_document | low/medium | Sim | KB013 | Não | Secretaria Acadêmica |
+| 14 | "Quero saber sobre bolsas de estudo por mérito" | STU014 | finance | ask_question | low/low | Sim | KB014 | Não | Financeiro |
+| 15 | "Minha nota da prova não aparece no portal" | STU015 | academic_services | report_problem | medium/medium | Não | KB015 | Sim | Secretaria Acadêmica |
+| 16 | "Onde fica a sala de inovação no campus Paulista?" | STU016 | campus_access | ask_question | low/low | Sim | KB016 | Não | Infraestrutura |
+| 17 | "Quero me inscrever no hackathon da FIAP" | STU017 | career | ask_question | low/low | Sim | KB017 | Não | Eventos |
+| 18 | "Não recebi o link para a aula síncrona de hoje" | STU018 | digital_learning | report_problem | high/high | Sim | KB018 | Não | Tecnologia Educacional |
+| 19 | "Como faço para validar horas complementares?" | STU019 | academic_services | ask_question | low/low | Sim | KB019 | Não | Secretaria Acadêmica |
+| 20 | "Perdi meu cartão de acesso ao prédio" | STU020 | campus_access | report_problem | medium/medium | Não | KB020 | Sim | Segurança |
+| 21 | "Quero saber se a biblioteca abre aos sábados" | STU021 | campus_access | ask_question | low/low | Sim | KB021 | Não | Biblioteca |
+| 22 | "Meu boleto venceu e não consigo gerar a segunda via" | STU022 | finance | financial_question | medium/high | Sim | KB022 | Não | Financeiro |
+| 23 | "Como acesso o portal de vagas da FIAP?" | STU023 | career | ask_question | low/low | Sim | KB023 | Não | Carreiras |
+| 24 | "O software do laboratório de redes está dando erro" | STU024 | digital_learning | report_problem | medium/medium | Sim | KB024 | Não | TI Suporte |
+| 25 | "Preciso de um histórico escolar oficial" | STU025 | academic_services | request_document | medium/low | Não | KB025 | Sim | Secretaria Acadêmica |
+| 26 | "Quero saber sobre o intercâmbio para o Canadá" | STU026 | career | ask_question | low/low | Sim | KB026 | Não | Internacional |
 
-| # | Título | employee_id | mensagem | categoria esperada | impact esperado | urgency esperada | priority esperada |
-|---|--------|-------------|----------|--------------------|-----------------|------------------|-------------------|
-| 01 | Notebook sem Wi-Fi | EMP012 | Meu notebook conectou na rede da empresa, mas não abre nada e preciso enviar atividades agora. | it | medium | high | high |
-| 02 | Phishing email received | EMP006 | Recebi um e-mail pedindo minha senha corporativa e cliquei no link sem querer. | security | high | high | critical |
-| 03 | Reembolso pendente | EMP003 | Enviei meu reembolso de viagem faz duas semanas e ainda não apareceu no sistema. | finance | low | medium | low |
-| 04 | Documento RH | EMP004 | Preciso de uma segunda via da carta de comprovação de vínculo para resolver um assunto pessoal. | hr | low | low | low |
-| 05 | Ar-condicionado no escritório | EMP015 | O ar-condicionado da sala está quebrado e a equipe inteira está desconfortável desde ontem. | facilities | medium | medium | medium |
-| 06 | Solicitação ambígua | EMP008 | Não consigo resolver um problema com meu cadastro interno e ninguém sabe dizer se é sistema ou processo. | other | low | medium | low |
-| 07 | Servidor fora do ar (urgente) | EMP009 | O sistema principal caiu para todo o time e estamos sem conseguir operar agora. | it | high | high | critical |
-| 08 | Nova conta de acesso | EMP001 | Entrei em um novo projeto e preciso acesso ao repositório compartilhado da equipe. | it | low | medium | low |
-| 09 | Impressora com defeito | EMP005 | A impressora do andar está travando papel e ninguém consegue imprimir documentos. | facilities | low | medium | low |
-| 10 | Solicitação de férias | EMP014 | Quero entender como registrar minhas férias do próximo mês no portal interno. | hr | low | low | low |
-| 11 | Falta de papel | EMP019 | Acabou o papel na impressora do setor e precisamos imprimir poucas folhas hoje. | facilities | low | low | low |
-| 12 | Problema com VPN | EMP001 | A VPN parou de autenticar e eu tenho reunião com cliente em 20 minutos. | it | medium | high | high |
-| 13 | Software não instala | EMP020 | Não consigo instalar a ferramenta necessária para a aula e já tentei reiniciar a máquina. | it | medium | medium | medium |
-| 14 | Relatório financeiro | EMP013 | O relatório de fechamento financeiro está inconsistente e preciso validar os números até o fim do dia. | finance | high | medium | high |
-| 15 | Treinamento de segurança | EMP011 | Quero saber como participar do treinamento obrigatório de segurança da informação. | hr | low | low | low |
-| 16 | Mudança de escritório | EMP007 | Minha equipe vai mudar de sala e precisamos de apoio para mesas, cadeiras e pontos físicos. | facilities | medium | low | low |
-| 17 | Problema com badge | EMP016 | Meu badge parou de funcionar e não consigo entrar na área restrita do andar. | security | medium | medium | high |
-| 18 | Solicitação de notebook novo | EMP017 | Meu notebook atual está muito lento para o trabalho e gostaria de solicitar substituição. | it | medium | low | low |
-| 19 | Alarme de segurança | EMP006 | O alarme disparou na sala de equipamentos e há suspeita de acesso indevido. | security | high | high | critical |
-| 20 | Dúvida sobre benefícios | EMP004 | Tenho dúvida sobre o plano de benefícios e não sei onde consultar essa informação. | hr | low | low | low |
-
-## Casos adicionais úteis para discussão em aula
-
-### Ambíguos
-
-- cenário 06: mistura processo interno e possível problema de sistema
-- cenário 08: pode ser tratado como acesso técnico ou solicitação operacional
-
-### Urgentes
-
-- cenário 07: indisponibilidade ampla
-- cenário 12: bloqueio com impacto imediato
-- cenário 19: incidente de segurança
-
-### Baixo impacto
-
-- cenário 04
-- cenário 10
-- cenário 11
-- cenário 20
-
-### Alto impacto
-
-- cenário 07
-- cenário 14
-- cenário 19
-
-## Sugestão de exercício
-
-1. enviar cada mensagem para um webhook do n8n ou Make
-2. usar LLM para classificar categoria, impact e urgency
-3. comparar com o resultado pedagógico esperado
-4. chamar `/api/v1/priority/check`
-5. abrir ticket apenas quando os campos estiverem válidos
+## Discussão em Aula
+- **Cenários 01 e 18:** Alta urgência. O workflow deve priorizar a resposta ou o encaminhamento imediato.
+- **Cenários 02, 03, 09, 15, 20, 25:** Exigem criação de solicitação (Request) pois envolvem documentos oficiais, dinheiro ou segurança física.
+- **Cenários de Auto-resposta:** O desafio é garantir que o LLM não invente informações (alucinação) e use apenas a base de conhecimento.
+- **Cenários de Erro:** Como o workflow deve se comportar se a API de busca de conhecimento estiver fora do ar?

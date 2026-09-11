@@ -1,5 +1,5 @@
 {
-  "name": "FlowDesk Lab - 03 Error Handling",
+  "name": "FIAP Student Desk Lab - 03 Error Handling",
   "nodes": [
     {
       "parameters": {},
@@ -8,14 +8,14 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -700,
+        -760,
         0
       ]
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "http://localhost:8000/api/v1/lab/slow?seconds=10",
+        "url": "http://localhost:8000/api/v1/lab/slow?seconds=3",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -30,7 +30,7 @@
           ]
         },
         "options": {
-          "timeout": 3000
+          "timeout": 1000
         }
       },
       "id": "error-http-slow-01",
@@ -38,8 +38,52 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -420,
-        -140
+        -480,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "error-wait-01",
+      "name": "Wait Before Retry",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/lab/slow?seconds=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-error-slow-retry"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 3000
+        }
+      },
+      "id": "error-http-slow-retry-01",
+      "name": "Retry Slow Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        80,
+        -180
       ]
     },
     {
@@ -66,7 +110,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -420,
+        -480,
         0
       ]
     },
@@ -94,8 +138,43 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -420,
-        140
+        -480,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/lab/validation",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-error-validation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"email\": \"invalid-email\", \"amount\": -10 }",
+        "options": {}
+      },
+      "id": "error-http-validation-01",
+      "name": "Call Validation Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -480,
+        360
       ]
     },
     {
@@ -111,13 +190,13 @@
             {
               "id": "error-assign-02",
               "name": "message",
-              "value": "Serviço temporariamente indisponível. Tente novamente em instantes.",
+              "value": "O fluxo detectou timeout, erro ou validação negativa e encaminhou para tratamento.",
               "type": "string"
             },
             {
               "id": "error-assign-03",
-              "name": "credentialsId",
-              "value": "YOUR_CREDENTIAL_ID",
+              "name": "strategy",
+              "value": "retry_then_fallback",
               "type": "string"
             }
           ]
@@ -125,14 +204,14 @@
         "options": {}
       },
       "id": "error-set-fallback-01",
-      "name": "Fallback Payload",
+      "name": "Fallback Summary",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -80,
-        0
+        360,
+        40
       ],
-      "notes": "Use this node as a common fallback branch after timeout, 500, or 429 handling. Placeholder value included for classroom credential demos.",
+      "notes": "Use este nó como resumo final após timeout, retry, 500, 429 ou 422.",
       "notesInFlow": true
     }
   ],
@@ -155,6 +234,11 @@
             "node": "Call Rate Limit Endpoint",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Call Validation Endpoint",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -163,7 +247,29 @@
       "main": [
         [
           {
-            "node": "Fallback Payload",
+            "node": "Wait Before Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Retry": {
+      "main": [
+        [
+          {
+            "node": "Retry Slow Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Slow Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fallback Summary",
             "type": "main",
             "index": 0
           }
@@ -174,7 +280,7 @@
       "main": [
         [
           {
-            "node": "Fallback Payload",
+            "node": "Fallback Summary",
             "type": "main",
             "index": 0
           }
@@ -185,7 +291,18 @@
       "main": [
         [
           {
-            "node": "Fallback Payload",
+            "node": "Fallback Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Validation Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fallback Summary",
             "type": "main",
             "index": 0
           }
@@ -202,6 +319,6 @@
     "templateCredsSetupCompleted": false,
     "instanceId": "YOUR_N8N_INSTANCE_ID"
   },
-  "id": "flowdesk-workflow-03",
+  "id": "fiap-student-desk-workflow-03",
   "tags": []
 }

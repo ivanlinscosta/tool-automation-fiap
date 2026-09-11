@@ -1,6 +1,0 @@
-{
-  "employee_id": "EMP002",
-  "resource": "production-server",
-  "justification": "Maintenance window for critical patch deployment",
-  "risk": "high"
-}

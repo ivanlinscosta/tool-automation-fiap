@@ -1,10 +1,10 @@
 {
-  "name": "FlowDesk Lab - 02 Intelligent Triage",
+  "name": "FIAP Student Desk Lab - 02 Intelligent Triage",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "flowdesk-triage",
+        "path": "fiap-student-triage",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -13,15 +13,15 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -900,
+        -940,
         0
       ],
-      "webhookId": "flowdesk-triage"
+      "webhookId": "fiap-student-triage"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "=http://localhost:8000/api/v1/employees/{{$json.body.employee_id}}",
+        "url": "=http://localhost:8000/api/v1/students/{{$json.body.student_id}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -31,18 +31,18 @@
             },
             {
               "name": "X-Request-ID",
-              "value": "n8n-triage-employee"
+              "value": "n8n-triage-student"
             }
           ]
         },
         "options": {}
       },
-      "id": "triage-http-employee-01",
-      "name": "Get Employee",
+      "id": "triage-http-student-01",
+      "name": "Get Student",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -620,
+        -660,
         0
       ]
     },
@@ -53,7 +53,7 @@
             {
               "id": "triage-assign-01",
               "name": "prompt_template",
-              "value": "Você é um classificador do FlowDesk Lab. Retorne SOMENTE JSON com category, impact, urgency, summary e description.",
+              "value": "Você é um classificador da FIAP Student Desk Lab API. Retorne SOMENTE JSON com category, impact, urgency, response_type, summary e knowledge_query.",
               "type": "string"
             },
             {
@@ -77,10 +77,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -340,
+        -380,
         0
       ],
-      "notes": "Replace this Set node with your AI/LLM node and map a structured JSON output. Placeholder credentials: YOUR_CREDENTIAL_ID / YOUR_CREDENTIAL_NAME.",
+      "notes": "Substitua este Set por um nó real de LLM com saída estruturada.",
       "notesInFlow": true
     },
     {
@@ -90,13 +90,13 @@
             {
               "id": "triage-assign-04",
               "name": "category",
-              "value": "it",
+              "value": "digital_learning",
               "type": "string"
             },
             {
               "id": "triage-assign-05",
               "name": "impact",
-              "value": "high",
+              "value": "medium",
               "type": "string"
             },
             {
@@ -107,14 +107,26 @@
             },
             {
               "id": "triage-assign-07",
-              "name": "summary",
-              "value": "Falha de conectividade no notebook",
+              "name": "response_type",
+              "value": "request_created",
               "type": "string"
             },
             {
               "id": "triage-assign-08",
-              "name": "description",
-              "value": "Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.",
+              "name": "summary",
+              "value": "Acesso ao ambiente virtual bloqueado",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-09",
+              "name": "knowledge_query",
+              "value": "acesso ambiente virtual",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-10",
+              "name": "response_text",
+              "value": "Encontrei instruções relacionadas e, se necessário, sua solicitação será registrada automaticamente.",
               "type": "string"
             }
           ]
@@ -126,11 +138,120 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -60,
+        -100,
         0
       ],
-      "notes": "Replace with a structured output parser, JSON parser, or validation node if preferred.",
+      "notes": "Placeholder de saída estruturada para classificação e decisão de roteamento.",
       "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/v1/knowledge/search?q={{$node[\"Structured Output Placeholder\"].json.knowledge_query}}&category={{$node[\"Structured Output Placeholder\"].json.category}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-knowledge"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "triage-http-knowledge-01",
+      "name": "Search Knowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $node[\"Structured Output Placeholder\"].json.response_type }}",
+              "rightValue": "grounded_answer",
+              "operator": {
+                "type": "string",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "triage-if-01",
+      "name": "IF Grounded Answer",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/interactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-interaction-answer"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"student_id\": $node[\"Webhook\"].json.body.student_id, \"request_text\": $node[\"Webhook\"].json.body.request_text, \"category\": $node[\"Structured Output Placeholder\"].json.category, \"response_type\": \"grounded_answer\", \"response_text\": $node[\"Structured Output Placeholder\"].json.response_text, \"knowledge_articles\": [\"KB001\"], \"source\": \"n8n\" }",
+        "options": {}
+      },
+      "id": "triage-http-interaction-answer-01",
+      "name": "Create Interaction - Answer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        760,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { student: $node['Get Student'].json, classification: $node['Structured Output Placeholder'].json, knowledge: $node['Search Knowledge'].json, interaction: $json } }}",
+        "options": {}
+      },
+      "id": "triage-respond-answer-01",
+      "name": "Respond with Answer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1060,
+        -120
+      ]
     },
     {
       "parameters": {
@@ -155,7 +276,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"category\": $json.category, \"impact\": $json.impact, \"urgency\": $json.urgency }",
+        "jsonBody": "={ \"student_id\": $node[\"Webhook\"].json.body.student_id, \"category\": $node[\"Structured Output Placeholder\"].json.category, \"impact\": $node[\"Structured Output Placeholder\"].json.impact, \"urgency\": $node[\"Structured Output Placeholder\"].json.urgency }",
         "options": {}
       },
       "id": "triage-http-priority-01",
@@ -163,151 +284,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        220,
-        -140
-      ]
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.category }}",
-                    "rightValue": "it",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equal"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.category }}",
-                    "rightValue": "hr",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equal"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.category }}",
-                    "rightValue": "finance",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equal"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.category }}",
-                    "rightValue": "facilities",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equal"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.category }}",
-                    "rightValue": "security",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equal"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            }
-          ]
-        },
-        "options": {
-          "fallbackOutput": 5
-        }
-      },
-      "id": "triage-switch-01",
-      "name": "Switch Category",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.2,
-      "position": [
-        220,
-        80
-      ]
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=http://localhost:8000/api/v1/teams/{{$node['Structured Output Placeholder'].json.category}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-Student-ID",
-              "value": "grupo-01"
-            },
-            {
-              "name": "X-Request-ID",
-              "value": "n8n-triage-team"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "triage-http-team-01",
-      "name": "Get Team",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [
-        520,
-        80
+        760,
+        120
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:8000/api/v1/tickets",
+        "url": "http://localhost:8000/api/v1/requests",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -321,37 +305,72 @@
             },
             {
               "name": "X-Request-ID",
-              "value": "n8n-triage-ticket"
+              "value": "n8n-triage-request"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"category\": $node['Structured Output Placeholder'].json.category, \"impact\": $node['Structured Output Placeholder'].json.impact, \"urgency\": $node['Structured Output Placeholder'].json.urgency, \"summary\": $node['Structured Output Placeholder'].json.summary, \"description\": $node['Structured Output Placeholder'].json.description, \"source\": \"n8n\" }",
+        "jsonBody": "={ \"student_id\": $node[\"Webhook\"].json.body.student_id, \"category\": $node[\"Structured Output Placeholder\"].json.category, \"priority\": $node[\"Priority API\"].json.priority, \"summary\": $node[\"Structured Output Placeholder\"].json.summary, \"description\": $node[\"Webhook\"].json.body.request_text, \"source\": \"n8n\" }",
         "options": {}
       },
-      "id": "triage-http-ticket-01",
-      "name": "Create Ticket",
+      "id": "triage-http-request-01",
+      "name": "Create Request",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        820,
-        80
+        1040,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/interactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-interaction-request"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"student_id\": $node[\"Webhook\"].json.body.student_id, \"request_text\": $node[\"Webhook\"].json.body.request_text, \"category\": $node[\"Structured Output Placeholder\"].json.category, \"response_type\": \"request_created\", \"response_text\": \"Sua solicitação foi registrada para atendimento humano.\", \"knowledge_articles\": [], \"source\": \"n8n\" }",
+        "options": {}
+      },
+      "id": "triage-http-interaction-request-01",
+      "name": "Create Interaction - Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1320,
+        120
       ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { classification: $node['Structured Output Placeholder'].json, priority: $node['Priority API'].json, team: $node['Get Team'].json, ticket: $json } }}",
+        "responseBody": "={{ { student: $node['Get Student'].json, classification: $node['Structured Output Placeholder'].json, knowledge: $node['Search Knowledge'].json, priority: $node['Priority API'].json, request: $node['Create Request'].json, interaction: $json } }}",
         "options": {}
       },
-      "id": "triage-respond-01",
-      "name": "Respond to Webhook",
+      "id": "triage-respond-request-01",
+      "name": "Respond with Request",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1120,
-        80
+        1620,
+        120
       ]
     }
   ],
@@ -361,14 +380,14 @@
       "main": [
         [
           {
-            "node": "Get Employee",
+            "node": "Get Student",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Employee": {
+    "Get Student": {
       "main": [
         [
           {
@@ -394,80 +413,80 @@
       "main": [
         [
           {
+            "node": "Search Knowledge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Knowledge": {
+      "main": [
+        [
+          {
+            "node": "IF Grounded Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Grounded Answer": {
+      "main": [
+        [
+          {
+            "node": "Create Interaction - Answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Priority API",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Create Interaction - Answer": {
+      "main": [
+        [
           {
-            "node": "Switch Category",
+            "node": "Respond with Answer",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Switch Category": {
+    "Priority API": {
       "main": [
         [
           {
-            "node": "Get Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Team",
+            "node": "Create Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Team": {
+    "Create Request": {
       "main": [
         [
           {
-            "node": "Create Ticket",
+            "node": "Create Interaction - Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Create Ticket": {
+    "Create Interaction - Request": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Respond with Request",
             "type": "main",
             "index": 0
           }
@@ -484,6 +503,6 @@
     "templateCredsSetupCompleted": false,
     "instanceId": "YOUR_N8N_INSTANCE_ID"
   },
-  "id": "flowdesk-workflow-02",
+  "id": "fiap-student-desk-workflow-02",
   "tags": []
 }

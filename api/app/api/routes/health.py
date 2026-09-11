@@ -18,4 +18,4 @@ async def health_check(
     x_request_id: str = Header(default="anonymous", alias="X-Request-ID"),
 ) -> dict[str, str]:
     _ = (x_student_id, x_request_id)
-    return {"status": "ok", "service": "flowdesk-lab-api", "version": "1.0.0"}
+    return {"status": "ok", "service": "fiap-student-desk-lab-api", "version": "1.0.0"}

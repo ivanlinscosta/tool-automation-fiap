@@ -1,164 +1,63 @@
-# FlowDesk Lab com Dify
+# Dify Lab: FIAP Student Desk Lab
 
-## Objetivo
+Este guia descreve como integrar a FIAP Student Desk Lab API ao Dify para criar agentes inteligentes e fluxos de trabalho automatizados.
 
-Usar a FlowDesk Lab API como conjunto de tools em aplicações Dify, tanto no modo Agent quanto no modo Workflow.
+## Importando a API como Tool
 
-## Fontes do contrato
+1. **Obtenha o OpenAPI Spec:**
+   Acesse `http://localhost:8000/openapi.json` (ou a URL do seu deploy no Railway) e salve o conteúdo ou copie o link.
 
-### Opção 1 — OpenAPI exposto pela aplicação
+2. **Configuração no Dify:**
+   - Vá em **Tools** > **Custom Tools** > **Create Custom Tool**.
+   - Nome: `FIAP_Student_Desk`.
+   - Schema: Cole o conteúdo do `openapi.json`.
+   - Privacy Policy: `https://fiap.com.br` (fictício).
 
-Use:
+3. **Autenticação e Headers:**
+   - Se desejar fixar o grupo, adicione o header `X-Student-ID` nas configurações da Tool.
 
+## Configurando um Agente (Chatflow)
+
+### 1. Seleção de Ferramentas (Tools)
+Habilite as seguintes ferramentas para o seu agente:
+- `get_student`: Para identificar o aluno.
+- `search_knowledge`: Para buscar respostas na base de conhecimento.
+- `get_department`: Para saber para onde encaminhar solicitações.
+- `check_priority`: Para definir a urgência.
+- `create_request`: Para abrir solicitações formais.
+- `register_interaction`: Para salvar o histórico.
+
+### 2. System Prompt (Instruções do Agente)
 ```text
-http://localhost:8000/openapi.json
+Você é o Assistente Virtual da FIAP Student Desk. Seu objetivo é ajudar alunos com dúvidas acadêmicas.
+
+Siga rigorosamente este protocolo:
+1. Identifique o aluno usando a ferramenta 'get_student' com o ID fornecido.
+2. Pesquise a dúvida na base de conhecimento usando 'search_knowledge'.
+3. Se encontrar a resposta nos artigos, responda ao aluno de forma clara e registre a conversa com 'register_interaction'.
+4. Se NÃO encontrar a resposta ou se for um pedido de documento/ajuste financeiro:
+   a. Verifique a prioridade com 'check_priority'.
+   b. Identifique o departamento com 'get_department'.
+   c. Crie uma solicitação formal com 'create_request'.
+   d. Informe o número do protocolo ao aluno.
+
+IMPORTANTE: Nunca invente informações. Se não souber, use as ferramentas ou encaminhe para um humano.
 ```
 
-> No estado atual do repositório, a referência segura e direta para importação é o endpoint `openapi.json` da aplicação em execução.
+### 3. Anti-Hallucination
+Adicione nas instruções:
+- "Responda apenas com base nos artigos retornados pela ferramenta search_knowledge."
+- "Se a ferramenta retornar vazio, não tente adivinhar a política da FIAP."
 
-## Como importar a API como Tool
+## Workflow Mode no Dify
+Para maior controle, você pode usar o modo **Workflow** em vez de **Chatflow**:
+- **Start Node:** Recebe `student_id` e `query`.
+- **Tool Node (Get Student):** Busca dados.
+- **LLM Node (Classifier):** Decide o próximo passo.
+- **Condition Node:** Se `search` ou `request`.
+- **Tool Node (Search/Request):** Executa a ação.
+- **End Node:** Resposta final.
 
-1. Abra o Dify.
-2. Crie ou edite uma aplicação.
-3. Vá até a área de **Tools**.
-4. Escolha importar via **OpenAPI**.
-5. Informe a URL `http://localhost:8000/openapi.json`.
-6. Revise os endpoints detectados.
-7. Publique as tools necessárias para o agente.
-
-Se o Dify detectar menos operações do que o esperado, valide primeiro o contrato realmente exposto em `/openapi.json` antes de seguir com a configuração do agente.
-
-## Tools recomendadas
-
-Para os exercícios iniciais, habilite pelo menos:
-
-- `get_employee`
-- `get_team`
-- `check_priority`
-- `create_ticket`
-
-Opcionalmente, adicione também:
-
-- `list_tickets`
-- `create_access_request`
-- `approve_access_request`
-- `list_events`
-
-## Configuração de headers
-
-Se a importação permitir headers default, configure:
-
-```text
-X-Student-ID: grupo-07
-```
-
-Se preferir, exponha esse valor como variável do app para cada grupo de alunos.
-Lembre-se: `X-Student-ID` ajuda no contexto pedagógico, mas não substitui autenticação.
-
-## Exemplo de Agent Setup
-
-### Papel do agente
-
-Um agente de triagem interna que:
-
-1. identifica o funcionário
-2. classifica a solicitação
-3. consulta prioridade
-4. identifica o time responsável
-5. cria o ticket
-
-### Tools ativas
-
-```text
-get_employee
-get_team
-check_priority
-create_ticket
-```
-
-### System prompt de exemplo
-
-```text
-Você é um agente de triagem da FlowDesk Lab.
-
-Sua função é analisar a solicitação do usuário e, quando necessário:
-1. identificar o funcionário pelo employee_id
-2. classificar a categoria entre: it, hr, finance, facilities, security, other
-3. estimar impact e urgency entre: low, medium, high
-4. consultar a tool de prioridade
-5. consultar a tool do time responsável
-6. criar um ticket somente quando houver dados suficientes
-
-Regras:
-- não invente employee_id
-- não invente categorias fora da lista
-- se a solicitação estiver ambígua, use other
-- explique resumidamente a decisão tomada
-- sempre preserve um resumo curto e uma descrição clara para o ticket
-```
-
-## Exemplo de fluxo de uso do Agent
-
-### Input do usuário
-
-```text
-Employee EMP001: não consigo entrar na VPN e preciso resolver isso ainda hoje.
-```
-
-### Passos esperados do agente
-
-1. chamar `get_employee` com `EMP001`
-2. inferir `category = it`
-3. inferir `impact = medium` e `urgency = high` como resultado pedagógico esperado
-4. chamar `check_priority`
-5. chamar `get_team`
-6. chamar `create_ticket`
-7. responder com ticket, prioridade e time
-
-## Exemplo de payload para `create_ticket`
-
-```json
-{
-  "employee_id": "EMP001",
-  "category": "it",
-  "impact": "medium",
-  "urgency": "high",
-  "summary": "Falha de acesso à VPN",
-  "description": "Funcionário relata impossibilidade de acesso à VPN e necessidade de continuidade do trabalho.",
-  "source": "dify"
-}
-```
-
-## Workflow Mode vs Agent Mode
-
-| Critério | Workflow Mode | Agent Mode |
-|----------|---------------|------------|
-| Controle do fluxo | Alto | Médio |
-| Determinismo | Alto | Menor |
-| Tool calling autônomo | Limitado ao desenho | Natural |
-| Melhor para aula inicial | Sim | Sim, após entender o contrato |
-| Melhor para experimentos com LLM | Bom | Excelente |
-
-## Quando usar Workflow Mode
-
-Use quando você quiser:
-
-- passos fixos
-- roteamento previsível
-- validação antes da criação do ticket
-- demonstrações mais controladas
-
-## Quando usar Agent Mode
-
-Use quando você quiser:
-
-- experimentar tool calling
-- comparar raciocínio livre vs fluxo rígido
-- testar ambiguidade, clarificação e fallback
-
-## Dicas de laboratório
-
-- comece importando apenas quatro tools
-- valide os nomes dos campos antes de liberar `create_ticket`
-- use prompts que forcem categorias válidas
-- mantenha `X-Student-ID` consistente por turma ou grupo
+## Dicas de Laboratório
+- **Variáveis:** Use variáveis de sistema do Dify para capturar o `conversation_id` e associar aos logs da API.
+- **Logs:** Acompanhe as chamadas na aba **Logs** do Dify para depurar o comportamento do agente.

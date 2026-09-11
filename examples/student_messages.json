@@ -1,0 +1,362 @@
+[
+  {
+    "id": 1,
+    "segment": "simple",
+    "student_id": "STU001",
+    "message": "Como redefino a senha do ambiente virtual?",
+    "expected_category": "digital_learning",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 2,
+    "segment": "simple",
+    "student_id": "STU002",
+    "message": "Onde emito a declaração de matrícula pelo portal?",
+    "expected_category": "academic_records",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 3,
+    "segment": "simple",
+    "student_id": "STU003",
+    "message": "Qual área ajuda com renovação de empréstimo da biblioteca?",
+    "expected_category": "library",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 4,
+    "segment": "simple",
+    "student_id": "STU004",
+    "message": "Quero saber como agendar revisão de currículo no portal de carreira.",
+    "expected_category": "career",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 5,
+    "segment": "simple",
+    "student_id": "STU005",
+    "message": "Como atualizo meu e-mail secundário cadastrado?",
+    "expected_category": "academic_records",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 6,
+    "segment": "simple",
+    "student_id": "STU006",
+    "message": "Existe um passo a passo para o primeiro acesso ao laboratório virtual?",
+    "expected_category": "digital_learning",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 7,
+    "segment": "simple",
+    "student_id": "STU007",
+    "message": "Onde vejo os horários de atendimento da biblioteca?",
+    "expected_category": "library",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 8,
+    "segment": "simple",
+    "student_id": "STU008",
+    "message": "Como solicito histórico escolar pelo sistema?",
+    "expected_category": "academic_records",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 9,
+    "segment": "simple",
+    "student_id": "STU009",
+    "message": "Como confirmar inscrição em uma oficina da carreira?",
+    "expected_category": "career",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 10,
+    "segment": "simple",
+    "student_id": "STU010",
+    "message": "Onde consulto avisos do International Office?",
+    "expected_category": "international_office",
+    "expected_action": "knowledge",
+    "requires_human": false
+  },
+  {
+    "id": 11,
+    "segment": "ambiguous",
+    "student_id": "STU011",
+    "message": "Preciso resolver meu acesso antes da aula de hoje.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 12,
+    "segment": "ambiguous",
+    "student_id": "STU012",
+    "message": "O portal diz uma coisa e o aplicativo mostra outra.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 13,
+    "segment": "ambiguous",
+    "student_id": "STU013",
+    "message": "Tenho um problema com um documento, mas não sei qual setor atende.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 14,
+    "segment": "ambiguous",
+    "student_id": "STU014",
+    "message": "Minha solicitação anterior sumiu e agora não sei o que fazer.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 15,
+    "segment": "ambiguous",
+    "student_id": "STU015",
+    "message": "O sistema está estranho desde cedo e preciso de ajuda.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 16,
+    "segment": "ambiguous",
+    "student_id": "STU016",
+    "message": "Quero regularizar uma pendência que apareceu ontem no portal.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 17,
+    "segment": "ambiguous",
+    "student_id": "STU017",
+    "message": "Não ficou claro se minha demanda é financeira ou acadêmica.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 18,
+    "segment": "ambiguous",
+    "student_id": "STU018",
+    "message": "Preciso de orientação porque meu acesso foi limitado, mas sem detalhes.",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 19,
+    "segment": "urgent",
+    "student_id": "STU019",
+    "message": "Minha prova prática começa em 20 minutos e meu crachá não libera a entrada principal.",
+    "expected_category": "campus_access",
+    "expected_action": "create_request",
+    "requires_human": true
+  },
+  {
+    "id": 20,
+    "segment": "urgent",
+    "student_id": "STU020",
+    "message": "O ambiente virtual caiu justo durante a entrega final do projeto.",
+    "expected_category": "digital_learning",
+    "expected_action": "create_request",
+    "requires_human": false
+  },
+  {
+    "id": 21,
+    "segment": "urgent",
+    "student_id": "STU021",
+    "message": "Hoje é o último dia do estágio e preciso da declaração de matrícula agora.",
+    "expected_category": "academic_records",
+    "expected_action": "create_request",
+    "requires_human": false
+  },
+  {
+    "id": 22,
+    "segment": "urgent",
+    "student_id": "STU022",
+    "message": "Tenho atendimento psicológico agendado e não consigo acessar o canal de suporte.",
+    "expected_category": "student_wellbeing",
+    "expected_action": "create_request",
+    "requires_human": true
+  },
+  {
+    "id": 23,
+    "segment": "urgent",
+    "student_id": "STU023",
+    "message": "Meu boleto venceu hoje e o portal travou antes do pagamento.",
+    "expected_category": "finance",
+    "expected_action": "create_request",
+    "requires_human": false
+  },
+  {
+    "id": 24,
+    "segment": "urgent",
+    "student_id": "STU024",
+    "message": "Estou na biblioteca e meu usuário foi bloqueado no meio da reserva de cabine.",
+    "expected_category": "library",
+    "expected_action": "create_request",
+    "requires_human": false
+  },
+  {
+    "id": 25,
+    "segment": "sensitive",
+    "student_id": "STU025",
+    "message": "Preciso reemitir meu cartão estudantil perdido para acessar áreas restritas.",
+    "expected_category": "campus_access",
+    "expected_action": "approval",
+    "requires_human": true
+  },
+  {
+    "id": 26,
+    "segment": "sensitive",
+    "student_id": "STU026",
+    "message": "Quero alterar dados pessoais sensíveis no cadastro acadêmico com urgência.",
+    "expected_category": "academic_records",
+    "expected_action": "approval",
+    "requires_human": true
+  },
+  {
+    "id": 27,
+    "segment": "sensitive",
+    "student_id": "STU027",
+    "message": "Preciso de atendimento ligado à acessibilidade com informações médicas anexadas.",
+    "expected_category": "accessibility",
+    "expected_action": "approval",
+    "requires_human": true
+  },
+  {
+    "id": 28,
+    "segment": "sensitive",
+    "student_id": "STU028",
+    "message": "Minha solicitação envolve dados financeiros sigilosos da bolsa.",
+    "expected_category": "finance",
+    "expected_action": "approval",
+    "requires_human": true
+  },
+  {
+    "id": 29,
+    "segment": "sensitive",
+    "student_id": "STU029",
+    "message": "Preciso compartilhar detalhes pessoais em um caso de suporte estudantil.",
+    "expected_category": "student_wellbeing",
+    "expected_action": "approval",
+    "requires_human": true
+  },
+  {
+    "id": 30,
+    "segment": "out_of_kb",
+    "student_id": "STU030",
+    "message": "Qual é a opinião da FIAP fictícia sobre tendências de IA para 2035?",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": false
+  },
+  {
+    "id": 31,
+    "segment": "out_of_kb",
+    "student_id": "STU031",
+    "message": "Você pode me dizer qual professor vai corrigir minha atividade amanhã?",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": false
+  },
+  {
+    "id": 32,
+    "segment": "out_of_kb",
+    "student_id": "STU032",
+    "message": "Quero uma previsão do tempo detalhada para todos os campi no próximo mês.",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": false
+  },
+  {
+    "id": 33,
+    "segment": "out_of_kb",
+    "student_id": "STU033",
+    "message": "Pode gerar uma carta de recomendação personalizada em nome da coordenação?",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": true
+  },
+  {
+    "id": 34,
+    "segment": "out_of_kb",
+    "student_id": "STU034",
+    "message": "Qual será a política real de mensalidades do próximo ano?",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": true
+  },
+  {
+    "id": 35,
+    "segment": "out_of_kb",
+    "student_id": "STU035",
+    "message": "Preciso saber quem estacionou na vaga 12 ontem à noite.",
+    "expected_category": null,
+    "expected_action": "human_or_out_of_scope",
+    "requires_human": true
+  },
+  {
+    "id": 36,
+    "segment": "edge_case",
+    "student_id": "STU036",
+    "message": "ambiente virtual ambiente virtual ambiente virtual... mas também biblioteca",
+    "expected_category": null,
+    "expected_action": "clarify_or_classify",
+    "requires_human": false
+  },
+  {
+    "id": 37,
+    "segment": "edge_case",
+    "student_id": "STU037",
+    "message": "\"Declaração\" pode ser matrícula, presença, ou conclusão — preciso da certa.",
+    "expected_category": "academic_records",
+    "expected_action": "clarify_then_respond",
+    "requires_human": false
+  },
+  {
+    "id": 38,
+    "segment": "edge_case",
+    "student_id": "STU038",
+    "message": "Meu problema sumiu sozinho, mas quero registrar caso volte.",
+    "expected_category": null,
+    "expected_action": "log_or_low_priority",
+    "requires_human": false
+  },
+  {
+    "id": 39,
+    "segment": "edge_case",
+    "student_id": "STU039",
+    "message": "Não consigo anexar o laudo; sem ele, minha demanda de acessibilidade fica incompleta.",
+    "expected_category": "accessibility",
+    "expected_action": "create_request",
+    "requires_human": true
+  },
+  {
+    "id": 40,
+    "segment": "edge_case",
+    "student_id": "STU040",
+    "message": "Preciso de ajuda com intercâmbio, boleto e acesso ao portal em uma única mensagem.",
+    "expected_category": null,
+    "expected_action": "split_intents",
+    "requires_human": true
+  }
+]

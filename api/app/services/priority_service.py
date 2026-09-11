@@ -1,6 +1,6 @@
 from typing import Literal
 
-from app.models.priority import PriorityRequest, PriorityResponse
+from ..models.priority import PriorityRequest, PriorityResponse
 
 
 ImpactLevel = Literal["low", "medium", "high"]
@@ -20,7 +20,7 @@ PRIORITY_MATRIX: dict[tuple[ImpactLevel, UrgencyLevel], tuple[PriorityLevel, int
     ("high", "high"): ("critical", 1),
 }
 
-SECURITY_PRIORITY: dict[UrgencyLevel, tuple[PriorityLevel, int]] = {
+CAMPUS_ACCESS_PRIORITY: dict[UrgencyLevel, tuple[PriorityLevel, int]] = {
     "low": ("high", 4),
     "medium": ("high", 2),
     "high": ("critical", 1),
@@ -30,9 +30,9 @@ SECURITY_PRIORITY: dict[UrgencyLevel, tuple[PriorityLevel, int]] = {
 def calculate_priority(priority_request: PriorityRequest) -> PriorityResponse:
     category = priority_request.category.strip().lower()
 
-    if category == "security":
-        priority, sla_hours = SECURITY_PRIORITY[priority_request.urgency]
-        rule = f"security_{priority_request.urgency}_security_override"
+    if category == "campus_access":
+        priority, sla_hours = CAMPUS_ACCESS_PRIORITY[priority_request.urgency]
+        rule = f"campus_access_{priority_request.urgency}_campus_access_override"
     else:
         priority, sla_hours = PRIORITY_MATRIX[(priority_request.impact, priority_request.urgency)]
         rule = f"{priority_request.impact}_{priority_request.urgency}_impact_urgency"

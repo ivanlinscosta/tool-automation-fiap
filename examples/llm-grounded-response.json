@@ -1,0 +1,16 @@
+{
+  "student_id": "STU021",
+  "request_text": "Preciso da declaração de matrícula para o estágio ainda hoje.",
+  "matched_articles": [
+    "KB010"
+  ],
+  "response_text": "Você pode emitir a declaração de matrícula no portal do aluno em Serviços Acadêmicos > Documentos. Após gerar o arquivo, valide o código no próprio portal se precisar comprovar autenticidade.",
+  "citations": [
+    {
+      "article_id": "KB010",
+      "title": "Solicitação de declaração de matrícula"
+    }
+  ],
+  "requires_human": false,
+  "response_type": "grounded_answer"
+}

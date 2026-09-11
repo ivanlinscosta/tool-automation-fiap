@@ -1,0 +1,6 @@
+{
+  "student_id": "STU025",
+  "request_type": "reissue_student_card",
+  "justification": "Perdi o cartão estudantil e preciso acessar o campus para uma avaliação presencial.",
+  "risk": "high"
+}

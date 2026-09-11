@@ -4,10 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings
-from app.db.database import init_db
-from app.db.seed import seed_data
-from app.middleware.request_context import RequestContextMiddleware
+from .config import settings
+from .db.database import init_db
+from .db.seed import seed_data
+from .middleware.request_context import RequestContextMiddleware
 
 
 logging.basicConfig(
@@ -30,8 +30,8 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="FlowDesk Lab API",
-    description="Pedagogical API for automation lab - Tools, Automations and Workflows",
+    title="FIAP Student Desk Lab API",
+    description="Central Inteligente de Solicitações Acadêmicas — pedagogical API for automation lab",
     version=settings.VERSION,
     lifespan=lifespan,
 )
@@ -47,22 +47,26 @@ app.add_middleware(
 )
 app.add_middleware(RequestContextMiddleware)
 
-from app.api.routes.health import router as health_router
-from app.api.routes.root import router as root_router
-from app.api.routes.employees import router as employees_router
-from app.api.routes.teams import router as teams_router
-from app.api.routes.priority import router as priority_router
-from app.api.routes.tickets import router as tickets_router
-from app.api.routes.access_requests import router as access_requests_router
-from app.api.routes.events import router as events_router
-from app.api.routes.lab import router as lab_router
+from .api.routes.approvals import router as approvals_router
+from .api.routes.departments import router as departments_router
+from .api.routes.events import router as events_router
+from .api.routes.health import router as health_router
+from .api.routes.interactions import router as interactions_router
+from .api.routes.knowledge import router as knowledge_router
+from .api.routes.lab import router as lab_router
+from .api.routes.priority import router as priority_router
+from .api.routes.requests import router as requests_router
+from .api.routes.root import router as root_router
+from .api.routes.students import router as students_router
 
 app.include_router(root_router)
 app.include_router(health_router)
-app.include_router(employees_router)
-app.include_router(teams_router)
+app.include_router(students_router)
+app.include_router(departments_router)
+app.include_router(knowledge_router)
 app.include_router(priority_router)
-app.include_router(tickets_router)
-app.include_router(access_requests_router)
+app.include_router(requests_router)
+app.include_router(interactions_router)
+app.include_router(approvals_router)
 app.include_router(events_router)
 app.include_router(lab_router)

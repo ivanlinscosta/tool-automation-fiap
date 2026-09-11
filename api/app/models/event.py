@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.database import Base
+from ..db.database import Base
 
 
 class Event(Base):
@@ -13,7 +13,8 @@ class Event(Base):
     event_id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
     event_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     student_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    fictional_student_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
     resource_type: Mapped[str] = mapped_column(String, nullable=False)
     resource_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     metadata_json: Mapped[str] = mapped_column(Text, nullable=False)
@@ -22,7 +23,8 @@ class Event(Base):
 class EventResponse(BaseModel):
     event_id: str = Field(description="Unique event identifier.")
     event_type: str = Field(description="Event classification or verb describing the action.")
-    student_id: str = Field(description="Student identifier associated with the action.")
+    student_id: str = Field(description="Lab group identifier captured from the X-Student-ID header.")
+    fictional_student_id: str | None = Field(default=None, description="Fictional student identifier from the request payload, when applicable.")
     timestamp: datetime = Field(description="UTC timestamp when the event was recorded.")
     resource_type: str = Field(description="Domain resource type related to the event.")
     resource_id: str = Field(description="Domain resource identifier related to the event.")

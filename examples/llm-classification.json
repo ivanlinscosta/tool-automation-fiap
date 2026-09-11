@@ -1,0 +1,16 @@
+{
+  "message_id": "msg-021",
+  "student_id": "STU021",
+  "request_text": "Preciso da declaração de matrícula para o estágio ainda hoje.",
+  "classification": {
+    "category": "academic_records",
+    "impact": "medium",
+    "urgency": "high",
+    "priority_hint": "high",
+    "requires_human": false,
+    "can_answer_from_kb": true,
+    "recommended_action": "grounded_answer",
+    "summary": "Solicitação urgente de declaração de matrícula para estágio",
+    "confidence": 0.96
+  }
+}

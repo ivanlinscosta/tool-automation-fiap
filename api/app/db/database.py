@@ -5,7 +5,7 @@ from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
-from app.config import settings
+from ..config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -28,11 +28,13 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     for module_name in (
-        "app.models.access_request",
-        "app.models.employee",
+        "app.models.approval_request",
+        "app.models.department",
         "app.models.event",
-        "app.models.team",
-        "app.models.ticket",
+        "app.models.interaction",
+        "app.models.knowledge",
+        "app.models.student",
+        "app.models.student_request",
     ):
         import_module(module_name)
     Base.metadata.create_all(bind=engine)

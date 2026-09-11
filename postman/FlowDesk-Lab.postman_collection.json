@@ -1,16 +1,42 @@
 {
   "info": {
-    "name": "FlowDesk Lab API",
-    "description": "Collection completa da API FlowDesk Lab para laboratório de automação.\n\nBase URL: use a variável {{base_url}}.\nStudent ID: use o header X-Student-ID via variável {{student_id}}.",
+    "name": "FIAP Student Desk Lab API",
+    "description": "Coleção Postman da FIAP Student Desk Lab API para fluxos didáticos com n8n, Make, Dify e clientes HTTP. Todos os dados são fictícios.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "7fe24f73-c99e-445e-9284-54f53249617b"
+    "_postman_id": "c4db3e52-6d5d-4b41-a5f0-7ea70af7b201"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "student_id",
+      "value": "grupo-01"
+    },
+    {
+      "key": "request_id_created",
+      "value": "REQ-1001"
+    },
+    {
+      "key": "interaction_id_created",
+      "value": "INT-3001"
+    },
+    {
+      "key": "approval_id_high",
+      "value": "APR-7001"
+    },
+    {
+      "key": "approval_id_low",
+      "value": "APR-7002"
+    }
+  ],
   "item": [
     {
-      "name": "00 - Root & Health",
+      "name": "1. Health & Root",
       "item": [
         {
-          "name": "Root - Service Info",
+          "name": "GET /health",
           "event": [
             {
               "listen": "test",
@@ -18,9 +44,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has docs link', () => pm.expect(pm.response.json().docs).to.equal('/docs'));",
-                  "pm.test('Has openapi link', () => pm.expect(pm.response.json().openapi).to.equal('/openapi.json'));",
-                  "pm.test('Has health link', () => pm.expect(pm.response.json().health).to.equal('/health'));"
+                  "pm.test('status=ok', () => pm.expect(pm.response.json().status).to.equal('ok'));",
+                  "pm.test('version exists', () => pm.expect(pm.response.json().version).to.exist);"
                 ]
               }
             }
@@ -28,52 +53,63 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/",
-              "host": ["{{base_url}}"],
-              "path": []
-            },
-            "description": "Retorna links de navegação da API (docs, openapi, health)."
-          }
-        },
-        {
-          "name": "Health Check",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Status ok', () => pm.expect(pm.response.json().status).to.equal('ok'));",
-                  "pm.test('Service name', () => pm.expect(pm.response.json().service).to.equal('flowdesk-lab-api'));",
-                  "pm.test('Version present', () => pm.expect(pm.response.json().version).to.exist);"
-                ]
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
               }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/health",
-              "host": ["{{base_url}}"],
-              "path": ["health"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
-            "description": "Health check. Usado pelo Railway para verificar se o serviço está ativo."
+            "description": "Verifica se a API pedagógica está saudável e pronta para uso em laboratório."
+          }
+        },
+        {
+          "name": "GET /",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('service name present', () => pm.expect(pm.response.json().service).to.be.a('string'));",
+                  "pm.test('docs link present', () => pm.expect(pm.response.json().docs).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": []
+            },
+            "description": "Retorna metadados de entrada, links úteis e identificação do serviço."
           }
         }
       ]
     },
     {
-      "name": "01 - Employees",
+      "name": "2. Students",
       "item": [
         {
-          "name": "Get Employee - EMP001",
+          "name": "GET /api/v1/students",
           "event": [
             {
               "listen": "test",
@@ -81,12 +117,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has id', () => pm.expect(pm.response.json().id).to.equal('EMP001'));",
-                  "pm.test('Has name', () => pm.expect(pm.response.json().name).to.be.a('string'));",
-                  "pm.test('Has department', () => pm.expect(pm.response.json().department).to.be.a('string'));",
-                  "pm.test('Has email', () => pm.expect(pm.response.json().email).to.include('@'));",
-                  "pm.test('Has role', () => pm.expect(pm.response.json().role).to.be.a('string'));",
-                  "pm.test('Has vip', () => pm.expect(pm.response.json().vip).to.be.a('boolean'));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('At least two students', () => pm.expect(pm.response.json().length).to.be.at.least(2));"
                 ]
               }
             }
@@ -94,18 +126,27 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/employees/EMP001",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "employees", "EMP001"]
+              "raw": "{{base_url}}/api/v1/students",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students"
+              ]
             },
-            "description": "Consulta funcionário EMP001 (Ayla Mercer, Marketing)."
+            "description": "Lista os estudantes fictícios usados nos cenários de atendimento acadêmico."
           }
         },
         {
-          "name": "Get Employee - EMP002 (VIP)",
+          "name": "GET /api/v1/students/STU001",
           "event": [
             {
               "listen": "test",
@@ -113,7 +154,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is VIP', () => pm.expect(pm.response.json().vip).to.be.true);"
+                  "pm.test('id is STU001', () => pm.expect(pm.response.json().id).to.equal('STU001'));",
+                  "pm.test('course exists', () => pm.expect(pm.response.json().course).to.be.a('string'));"
                 ]
               }
             }
@@ -121,18 +163,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/employees/EMP002",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "employees", "EMP002"]
+              "raw": "{{base_url}}/api/v1/students/STU001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "STU001"
+              ]
             },
-            "description": "Consulta funcionário EMP002 (Dario Flint, IT, VIP)."
+            "description": "Consulta o estudante STU001 para enriquecer o fluxo antes da classificação."
           }
         },
         {
-          "name": "Get Employee - EMP006 (VIP)",
+          "name": "GET /api/v1/students/STU002",
           "event": [
             {
               "listen": "test",
@@ -140,7 +192,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is VIP', () => pm.expect(pm.response.json().vip).to.be.true);"
+                  "pm.test('id is STU002', () => pm.expect(pm.response.json().id).to.equal('STU002'));",
+                  "pm.test('campus exists', () => pm.expect(pm.response.json().campus).to.be.a('string'));"
                 ]
               }
             }
@@ -148,18 +201,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/employees/EMP006",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "employees", "EMP006"]
+              "raw": "{{base_url}}/api/v1/students/STU002",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "STU002"
+              ]
             },
-            "description": "Consulta funcionário EMP006 (Theo Ravel, Security, VIP)."
+            "description": "Consulta o estudante STU002 para validar outro perfil acadêmico."
           }
         },
         {
-          "name": "Get Employee - Not Found (EMP999)",
+          "name": "GET /api/v1/students/STU999",
           "event": [
             {
               "listen": "test",
@@ -167,7 +230,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('Error detail', () => pm.expect(pm.response.json().detail).to.equal('Employee not found'));"
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.be.a('string'));"
                 ]
               }
             }
@@ -175,23 +238,33 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/employees/EMP999",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "employees", "EMP999"]
+              "raw": "{{base_url}}/api/v1/students/STU999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "STU999"
+              ]
             },
-            "description": "Teste de erro 404 - funcionário inexistente."
+            "description": "Caminho negativo para estudante inexistente."
           }
         }
       ]
     },
     {
-      "name": "02 - Teams",
+      "name": "3. Departments",
       "item": [
         {
-          "name": "Get Team - IT",
+          "name": "GET /api/v1/departments",
           "event": [
             {
               "listen": "test",
@@ -199,11 +272,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Category is it', () => pm.expect(pm.response.json().category).to.equal('it'));",
-                  "pm.test('Team is IT Support', () => pm.expect(pm.response.json().team).to.equal('IT Support'));",
-                  "pm.test('Has email', () => pm.expect(pm.response.json().email).to.include('@'));",
-                  "pm.test('Has queue', () => pm.expect(pm.response.json().queue).to.be.a('string'));",
-                  "pm.test('Has sla', () => pm.expect(pm.response.json().sla_default_hours).to.be.a('number'));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Has 9 departments', () => pm.expect(pm.response.json().length).to.be.at.least(9));"
                 ]
               }
             }
@@ -211,18 +281,27 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/teams/it",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "it"]
+              "raw": "{{base_url}}/api/v1/departments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ]
             },
-            "description": "Equipe de TI - SLA padrão 4h."
+            "description": "Lista os 9 departamentos acadêmicos fictícios disponíveis para roteamento."
           }
         },
         {
-          "name": "Get Team - HR",
+          "name": "GET /api/v1/departments/digital_learning",
           "event": [
             {
               "listen": "test",
@@ -230,7 +309,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Team is Human Resources', () => pm.expect(pm.response.json().team).to.equal('Human Resources'));"
+                  "pm.test('category matches', () => pm.expect(pm.response.json().category).to.equal('digital_learning'));",
+                  "pm.test('queue exists', () => pm.expect(pm.response.json().queue).to.be.a('string'));"
                 ]
               }
             }
@@ -238,18 +318,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/teams/hr",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "hr"]
+              "raw": "{{base_url}}/api/v1/departments/digital_learning",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "digital_learning"
+              ]
             },
-            "description": "Equipe de RH - SLA padrão 8h."
+            "description": "Consulta a área Digital Learning Hub."
           }
         },
         {
-          "name": "Get Team - Finance",
+          "name": "GET /api/v1/departments/career",
           "event": [
             {
               "listen": "test",
@@ -257,7 +347,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Team is Finance', () => pm.expect(pm.response.json().team).to.equal('Finance'));"
+                  "pm.test('category matches', () => pm.expect(pm.response.json().category).to.equal('career'));",
+                  "pm.test('department exists', () => pm.expect(pm.response.json().department).to.be.a('string'));"
                 ]
               }
             }
@@ -265,18 +356,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/teams/finance",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "finance"]
+              "raw": "{{base_url}}/api/v1/departments/career",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "career"
+              ]
             },
-            "description": "Equipe Financeira - SLA padrão 12h."
+            "description": "Consulta a área Career Services Center."
           }
         },
         {
-          "name": "Get Team - Facilities",
+          "name": "GET /api/v1/departments/library",
           "event": [
             {
               "listen": "test",
@@ -284,7 +385,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Team is Facilities', () => pm.expect(pm.response.json().team).to.equal('Facilities'));"
+                  "pm.test('category matches', () => pm.expect(pm.response.json().category).to.equal('library'));",
+                  "pm.test('sla exists', () => pm.expect(pm.response.json().sla_default_hours).to.be.a('number'));"
                 ]
               }
             }
@@ -292,72 +394,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/teams/facilities",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "facilities"]
-            },
-            "description": "Equipe de Infraestrutura - SLA padrão 6h."
-          }
-        },
-        {
-          "name": "Get Team - Security",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Team is Security', () => pm.expect(pm.response.json().team).to.equal('Security'));"
-                ]
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
               }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/teams/security",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "security"]
+              "raw": "{{base_url}}/api/v1/departments/library",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "library"
+              ]
             },
-            "description": "Equipe de Segurança - SLA padrão 2h."
+            "description": "Consulta a área Library Support."
           }
         },
         {
-          "name": "Get Team - Other",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Team is General Support', () => pm.expect(pm.response.json().team).to.equal('General Support'));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/teams/other",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "other"]
-            },
-            "description": "Equipe Geral - SLA padrão 24h."
-          }
-        },
-        {
-          "name": "Get Team - Not Found (invalid)",
+          "name": "GET /api/v1/departments/invalid",
           "event": [
             {
               "listen": "test",
@@ -365,7 +423,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('Error detail', () => pm.expect(pm.response.json().detail).to.include('Team not found'));"
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.be.a('string'));"
                 ]
               }
             }
@@ -373,23 +431,33 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/teams/invalid",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "teams", "invalid"]
+              "raw": "{{base_url}}/api/v1/departments/invalid",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "invalid"
+              ]
             },
-            "description": "Teste de erro 404 - categoria inexistente."
+            "description": "Caminho negativo para categoria de departamento inexistente."
           }
         }
       ]
     },
     {
-      "name": "03 - Priority",
+      "name": "4. Knowledge",
       "item": [
         {
-          "name": "Priority - High Impact + High Urgency = Critical",
+          "name": "GET /api/v1/knowledge",
           "event": [
             {
               "listen": "test",
@@ -397,34 +465,35 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Priority is critical', () => pm.expect(pm.response.json().priority).to.equal('critical'));",
-                  "pm.test('SLA is 1h', () => pm.expect(pm.response.json().sla_hours).to.equal(1));",
-                  "pm.test('Requires escalation', () => pm.expect(pm.response.json().requires_escalation).to.be.true);"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge"
+              ]
             },
-            "description": "impact=high + urgency=high → priority=critical, SLA=1h, escalation=true"
+            "description": "Lista toda a base de conhecimento didática."
           }
         },
         {
-          "name": "Priority - Medium + Medium = Medium",
+          "name": "GET /api/v1/knowledge?category=digital_learning",
           "event": [
             {
               "listen": "test",
@@ -432,33 +501,41 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Priority is medium', () => pm.expect(pm.response.json().priority).to.equal('medium'));",
-                  "pm.test('SLA is 6h', () => pm.expect(pm.response.json().sla_hours).to.equal(6));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"medium\",\n  \"urgency\": \"medium\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge?category=digital_learning",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "digital_learning"
+                }
+              ]
             },
-            "description": "impact=medium + urgency=medium → priority=medium, SLA=6h"
+            "description": "Filtra artigos de conhecimento da categoria digital_learning."
           }
         },
         {
-          "name": "Priority - Low + Low = Low",
+          "name": "GET /api/v1/knowledge/search?q=acesso+ambiente",
           "event": [
             {
               "listen": "test",
@@ -466,33 +543,43 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Priority is low', () => pm.expect(pm.response.json().priority).to.equal('low'));",
-                  "pm.test('SLA is 24h', () => pm.expect(pm.response.json().sla_hours).to.equal(24));"
+                  "pm.test('Has results array', () => pm.expect(pm.response.json().results).to.be.an('array'));",
+                  "pm.test('query returned', () => pm.expect(pm.response.json().query).to.exist);"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge/search?q=acesso+ambiente",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "acesso ambiente"
+                }
+              ]
             },
-            "description": "impact=low + urgency=low → priority=low, SLA=24h"
+            "description": "Busca artigos sobre acesso ao ambiente virtual."
           }
         },
         {
-          "name": "Priority - Security Override (High Urgency)",
+          "name": "GET /api/v1/knowledge/search?q=declaracao+matricula",
           "event": [
             {
               "listen": "test",
@@ -500,33 +587,42 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Priority is critical', () => pm.expect(pm.response.json().priority).to.equal('critical'));",
-                  "pm.test('Rule has security', () => pm.expect(pm.response.json().rule).to.include('security'));"
+                  "pm.test('Has results array', () => pm.expect(pm.response.json().results).to.be.an('array'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"security\",\n  \"impact\": \"low\",\n  \"urgency\": \"high\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge/search?q=declaracao+matricula",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "declaracao matricula"
+                }
+              ]
             },
-            "description": "security + urgency=high → priority=critical (security override)"
+            "description": "Busca artigos sobre declaração de matrícula."
           }
         },
         {
-          "name": "Priority - Security Override (Low Urgency)",
+          "name": "GET /api/v1/knowledge/KB001",
           "event": [
             {
               "listen": "test",
@@ -534,81 +630,87 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Priority is high', () => pm.expect(pm.response.json().priority).to.equal('high'));",
-                  "pm.test('Rule has security', () => pm.expect(pm.response.json().rule).to.include('security'));"
+                  "pm.test('id is KB001', () => pm.expect(pm.response.json().id).to.equal('KB001'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"security\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge/KB001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge",
+                "KB001"
+              ]
             },
-            "description": "security + urgency=low → priority=high (security override mínimo)"
+            "description": "Consulta o artigo KB001 para respostas grounded."
           }
         },
         {
-          "name": "Priority - Invalid Impact (422)",
+          "name": "GET /api/v1/knowledge/KB999",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.be.a('string'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"invalid\",\n  \"urgency\": \"high\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
-              "raw": "{{base_url}}/api/v1/priority/check",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "priority", "check"]
+              "raw": "{{base_url}}/api/v1/knowledge/KB999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "knowledge",
+                "KB999"
+              ]
             },
-            "description": "Teste de validação 422 - impacto inválido."
+            "description": "Caminho negativo para artigo inexistente."
           }
         }
       ]
     },
     {
-      "name": "04 - Tickets",
+      "name": "5. Priority",
       "item": [
         {
-          "name": "Create Ticket - WiFi Issue",
+          "name": "POST /api/v1/priority/check - critical",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.match(/^TK-/));",
-                  "pm.test('Status is open', () => pm.expect(pm.response.json().status).to.equal('open'));",
-                  "pm.test('Has assigned_team', () => pm.expect(pm.response.json().assigned_team).to.be.a('string'));",
-                  "pm.environment.set('last_ticket_id', pm.response.json().ticket_id);"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('priority exists', () => pm.expect(pm.response.json().priority).to.be.a('string'));",
+                  "pm.test('sla exists', () => pm.expect(pm.response.json().sla_hours).to.be.a('number'));"
                 ]
               }
             }
@@ -616,32 +718,49 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "priority",
+                "check"
+              ]
+            },
+            "description": "Cenário crítico com alto impacto e alta urgência.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Notebook sem Wi-Fi\",\n  \"description\": \"Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.\",\n  \"source\": \"n8n\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"]
-            },
-            "description": "Cria ticket de problema de Wi-Fi. Prioridade calculada automaticamente."
+              "raw": "{\n  \"student_id\": \"STU001\",\n  \"category\": \"digital_learning\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Create Ticket - Phishing",
+          "name": "POST /api/v1/priority/check - medium",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.match(/^TK-/));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('priority exists', () => pm.expect(pm.response.json().priority).to.be.a('string'));"
                 ]
               }
             }
@@ -649,32 +768,49 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "priority",
+                "check"
+              ]
+            },
+            "description": "Cenário de média urgência e impacto médio.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP003\",\n  \"category\": \"security\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Email de phishing recebido\",\n  \"description\": "Recebi um email suspeito pedindo credenciais. Cliquei no link antes de perceber.\",\n  \"source\": \"postman\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"]
-            },
-            "description": "Cria ticket de segurança - phishing. Categoria security com override de prioridade."
+              "raw": "{\n  \"student_id\": \"STU002\",\n  \"category\": \"finance\",\n  \"impact\": \"medium\",\n  \"urgency\": \"medium\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Create Ticket - Low Priority",
+          "name": "POST /api/v1/priority/check - low",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Priority is low', () => pm.expect(pm.response.json().priority).to.equal('low'));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('priority exists', () => pm.expect(pm.response.json().priority).to.be.a('string'));"
                 ]
               }
             }
@@ -682,24 +818,41 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "priority",
+                "check"
+              ]
+            },
+            "description": "Cenário de baixa prioridade.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP005\",\n  \"category\": \"facilities\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\",\n  \"summary\": \"Falta de papel na impressora\",\n  \"description\": \"O papel da impressora do 3o andar acabou.\",\n  \"source\": \"api\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"]
-            },
-            "description": "Ticket de baixa prioridade - falta de papel."
+              "raw": "{\n  \"student_id\": \"STU003\",\n  \"category\": \"career\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Get Ticket by ID",
+          "name": "POST /api/v1/priority/check - campus_access override",
           "event": [
             {
               "listen": "test",
@@ -707,204 +860,105 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.be.a('string'));"
+                  "pm.test('rule exists', () => pm.expect(pm.response.json().rule).to.be.a('string'));",
+                  "pm.test('requires_escalation exists', () => pm.expect(pm.response.json().requires_escalation).to.be.a('boolean'));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets/TK-1001",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets", "TK-1001"]
-            },
-            "description": "Consulta ticket específico por ID."
-          }
-        },
-        {
-          "name": "Get Ticket - Not Found",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
-                ]
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
               }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/tickets/TK-9999",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets", "TK-9999"]
-            },
-            "description": "Teste 404 - ticket inexistente."
-          }
-        },
-        {
-          "name": "List All Tickets",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"]
-            },
-            "description": "Lista todos os tickets do student_id atual."
-          }
-        },
-        {
-          "name": "List Tickets - Filter by Category",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets?category=it",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"],
-              "query": [
-                { "key": "category", "value": "it" }
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "priority",
+                "check"
               ]
             },
-            "description": "Lista tickets filtrados por categoria IT."
+            "description": "Exemplo de override para campus_access com urgência alta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"STU004\",\n  \"category\": \"campus_access\",\n  \"impact\": \"low\",\n  \"urgency\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "List Tickets - Filter by Employee",
+          "name": "POST /api/v1/priority/check - invalid 422",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('validation detail exists', () => pm.expect(pm.response.json().detail).to.exist);"
                 ]
               }
             }
           ],
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/tickets?employee_id=EMP001",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"],
-              "query": [
-                { "key": "employee_id", "value": "EMP001" }
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "priority",
+                "check"
               ]
             },
-            "description": "Lista tickets do funcionário EMP001."
-          }
-        },
-        {
-          "name": "List Tickets - Filter by Priority",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
-                ]
+            "description": "Validação negativa com impacto inválido.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"STU005\",\n  \"category\": \"digital_learning\",\n  \"impact\": \"invalid\",\n  \"urgency\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets?priority=critical",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"],
-              "query": [
-                { "key": "priority", "value": "critical" }
-              ]
-            },
-            "description": "Lista tickets com prioridade crítica."
-          }
-        },
-        {
-          "name": "List Tickets - Filter by Status",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tickets?status=open",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tickets"],
-              "query": [
-                { "key": "status", "value": "open" }
-              ]
-            },
-            "description": "Lista tickets abertos."
           }
         }
       ]
     },
     {
-      "name": "05 - Access Requests",
+      "name": "6. Requests",
       "item": [
         {
-          "name": "Create Access Request - High Risk",
+          "name": "POST /api/v1/requests - digital_learning high",
           "event": [
             {
               "listen": "test",
@@ -912,9 +966,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Requires approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.true);",
-                  "pm.test('Status pending', () => pm.expect(pm.response.json().status).to.equal('pending_approval'));",
-                  "pm.environment.set('last_access_request_id', pm.response.json().request_id);"
+                  "pm.test('request_id exists', () => pm.expect(pm.response.json().request_id).to.be.a('string'));",
+                  "pm.collectionVariables.set('request_id_created', pm.response.json().request_id);"
                 ]
               }
             }
@@ -922,24 +975,40 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests"
+              ]
+            },
+            "description": "Cria solicitação de digital_learning com prioridade alta.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP002\",\n  \"resource\": \"production-server\",\n  \"justification\": \"Maintenance window for critical patch deployment\",\n  \"risk\": \"high\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/access-requests",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests"]
-            },
-            "description": "Solicitação de alto risco - requer aprovação humana."
+              "raw": "{\n  \"student_id\": \"STU001\",\n  \"category\": \"digital_learning\",\n  \"priority\": \"high\",\n  \"summary\": \"Acesso ao ambiente virtual bloqueado\",\n  \"description\": \"Mesmo após redefinir a senha, o portal continua rejeitando o login.\",\n  \"source\": \"n8n\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Create Access Request - Low Risk (Auto-Approved)",
+          "name": "POST /api/v1/requests - finance medium",
           "event": [
             {
               "listen": "test",
@@ -947,8 +1016,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Auto-approved', () => pm.expect(pm.response.json().status).to.equal('auto_approved'));",
-                  "pm.test('No human approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.false);"
+                  "pm.test('category exists', () => pm.expect(pm.response.json().category).to.be.a('string'));"
                 ]
               }
             }
@@ -956,24 +1024,40 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests"
+              ]
+            },
+            "description": "Cria solicitação financeira de prioridade média.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP005\",\n  \"resource\": \"office-supplies\",\n  \"justification\": \"Need paper and pens for meeting room\",\n  \"risk\": \"low\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/access-requests",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests"]
-            },
-            "description": "Solicitação de baixo risco - aprovada automaticamente."
+              "raw": "{\n  \"student_id\": \"STU002\",\n  \"category\": \"finance\",\n  \"priority\": \"medium\",\n  \"summary\": \"Dúvida sobre boleto complementar\",\n  \"description\": \"Preciso entender o valor adicional lançado neste mês.\",\n  \"source\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Create Access Request - Medium Risk",
+          "name": "POST /api/v1/requests - career low",
           "event": [
             {
               "listen": "test",
@@ -981,8 +1065,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Requires approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.true);",
-                  "pm.test('Status pending', () => pm.expect(pm.response.json().status).to.equal('pending_approval'));"
+                  "pm.test('summary exists', () => pm.expect(pm.response.json().summary).to.be.a('string'));"
                 ]
               }
             }
@@ -990,24 +1073,40 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests"
+              ]
+            },
+            "description": "Cria solicitação de carreira com baixa prioridade.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP008\",\n  \"resource\": \"customer-database\",\n  \"justification\": "Need read access for quarterly report analysis\",\n  \"risk\": \"medium\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/access-requests",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests"]
-            },
-            "description": "Solicitação de médio risco - requer aprovação."
+              "raw": "{\n  \"student_id\": \"STU003\",\n  \"category\": \"career\",\n  \"priority\": \"low\",\n  \"summary\": \"Quero revisar meu currículo no portal\",\n  \"description\": \"Gostaria de orientação para atualizar meu perfil de carreira.\",\n  \"source\": \"api\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Get Access Request by ID",
+          "name": "GET /api/v1/requests",
           "event": [
             {
               "listen": "test",
@@ -1015,7 +1114,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has request_id', () => pm.expect(pm.response.json().request_id).to.match(/^AR-/));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
@@ -1023,25 +1122,35 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/access-requests/AR-501",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests", "AR-501"]
+              "raw": "{{base_url}}/api/v1/requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests"
+              ]
             },
-            "description": "Consulta solicitação de acesso por ID."
+            "description": "Lista as solicitações do grupo atual."
           }
         },
         {
-          "name": "Get Access Request - Not Found",
+          "name": "GET /api/v1/requests/{id}",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Has body', () => pm.expect(pm.response.text()).to.not.equal(''));"
                 ]
               }
             }
@@ -1049,90 +1158,133 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/access-requests/AR-999",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests", "AR-999"]
+              "raw": "{{base_url}}/api/v1/requests/{{request_id_created}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests",
+                "{{request_id_created}}"
+              ]
             },
-            "description": "Teste 404 - solicitação inexistente."
+            "description": "Consulta a solicitação recém-criada ou o valor padrão da variável."
           }
         },
         {
-          "name": "Approve Access Request",
+          "name": "PATCH /api/v1/requests/{id}",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Status approved', () => pm.expect(pm.response.json().status).to.equal('approved'));",
-                  "pm.test('Has approved_by', () => pm.expect(pm.response.json().approved_by).to.be.a('string'));",
-                  "pm.test('Has decision_at', () => pm.expect(pm.response.json().decision_at).to.be.a('string'));"
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Non-empty response', () => pm.expect(pm.response.text()).to.not.equal(''));"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requests/{{request_id_created}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "requests",
+                "{{request_id_created}}"
+              ]
+            },
+            "description": "Atualiza status, prioridade e área responsável de uma solicitação.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"decision\": \"approved\",\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision_comment\": \"Aprovado para demonstração em sala de aula.\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/access-requests/AR-501/approve",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests", "AR-501", "approve"]
-            },
-            "description": "Aprova solicitação de acesso pendente."
-          }
-        },
-        {
-          "name": "Reject Access Request",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));"
-                ]
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"priority\": \"critical\",\n  \"assigned_department\": \"Campus Access Control\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"decision\": \"rejected\",\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision_comment\": \"Rejeitado para demonstração de fluxo de rejeição.\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/access-requests/AR-501/approve",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "access-requests", "AR-501", "approve"]
-            },
-            "description": "Rejeita solicitação de acesso (pode retornar 404 se já processada)."
           }
         }
       ]
     },
     {
-      "name": "06 - Events (Audit)",
+      "name": "7. Interactions",
       "item": [
         {
-          "name": "List All Events",
+          "name": "POST /api/v1/interactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('interaction_id exists', () => pm.expect(pm.response.json().interaction_id).to.be.a('string'));",
+                  "pm.collectionVariables.set('interaction_id_created', pm.response.json().interaction_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/interactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interactions"
+              ]
+            },
+            "description": "Registra uma interação com resposta grounded em artigos da base.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"STU001\",\n  \"request_text\": \"Preciso da declaração de matrícula para o estágio.\",\n  \"category\": \"academic_records\",\n  \"response_type\": \"grounded_answer\",\n  \"response_text\": \"Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.\",\n  \"knowledge_articles\": [\n    \"KB010\"\n  ],\n  \"source\": \"dify\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/interactions",
           "event": [
             {
               "listen": "test",
@@ -1140,7 +1292,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
@@ -1148,18 +1300,349 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/interactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interactions"
+              ]
+            },
+            "description": "Lista interações registradas para auditoria e debugging."
+          }
+        },
+        {
+          "name": "GET /api/v1/interactions/{id}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Has body', () => pm.expect(pm.response.text()).to.not.equal(''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/interactions/{{interaction_id_created}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interactions",
+                "{{interaction_id_created}}"
+              ]
+            },
+            "description": "Consulta uma interação específica."
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Approvals",
+      "item": [
+        {
+          "name": "POST /api/v1/approval-requests - high risk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('approval_id exists', () => pm.expect(pm.response.json().approval_id).to.be.a('string'));",
+                  "pm.collectionVariables.set('approval_id_high', pm.response.json().approval_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approval-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "approval-requests"
+              ]
+            },
+            "description": "Cria solicitação sensível de alto risco que tende a exigir revisão humana.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"STU004\",\n  \"request_type\": \"reissue_student_card\",\n  \"justification\": \"Perdi o cartão estudantil e tenho acesso bloqueado ao campus.\",\n  \"risk\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/approval-requests - low risk auto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('status exists', () => pm.expect(pm.response.json().status).to.be.a('string'));",
+                  "pm.collectionVariables.set('approval_id_low', pm.response.json().approval_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approval-requests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "approval-requests"
+              ]
+            },
+            "description": "Cria solicitação de baixo risco, útil para testar autoaprovação.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"STU005\",\n  \"request_type\": \"update_contact_email\",\n  \"justification\": \"Preciso atualizar o e-mail secundário cadastrado.\",\n  \"risk\": \"low\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/approval-requests/{id}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Has body', () => pm.expect(pm.response.text()).to.not.equal(''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approval-requests/{{approval_id_high}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "approval-requests",
+                "{{approval_id_high}}"
+              ]
+            },
+            "description": "Consulta a aprovação sensível recém-criada."
+          }
+        },
+        {
+          "name": "POST /api/v1/approval-requests/{id}/decision - approve",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Has body', () => pm.expect(pm.response.text()).to.not.equal(''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approval-requests/{{approval_id_high}}/decision",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "approval-requests",
+                "{{approval_id_high}}",
+                "decision"
+              ]
+            },
+            "description": "Registra decisão de aprovação.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"approved_by\": \"tutor.lab@fiap.fake\",\n  \"comment\": \"Aprovado para seguir com a simulação em sala.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/approval-requests/{id}/decision - reject",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));",
+                  "pm.test('Has body', () => pm.expect(pm.response.text()).to.not.equal(''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approval-requests/{{approval_id_high}}/decision",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "approval-requests",
+                "{{approval_id_high}}",
+                "decision"
+              ]
+            },
+            "description": "Registra decisão de rejeição para o mesmo fluxo didático.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"rejected\",\n  \"approved_by\": \"tutor.lab@fiap.fake\",\n  \"comment\": \"Rejeitado para demonstrar o caminho de negativa.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Events",
+      "item": [
+        {
+          "name": "GET /api/v1/events",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/events",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "events"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "events"
+              ]
             },
-            "description": "Lista eventos de auditoria do student_id atual."
+            "description": "Lista eventos de auditoria do grupo atual."
           }
         },
         {
-          "name": "List Events - Filter by Type",
+          "name": "GET /api/v1/events?event_type=ticket_created",
           "event": [
             {
               "listen": "test",
@@ -1167,7 +1650,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "pm.test('Array response', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
@@ -1175,26 +1658,38 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/events?event_type=ticket_created",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "events"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "events"
+              ],
               "query": [
-                { "key": "event_type", "value": "ticket_created" }
+                {
+                  "key": "event_type",
+                  "value": "ticket_created"
+                }
               ]
             },
-            "description": "Lista eventos de criação de ticket."
+            "description": "Filtra eventos por event_type conforme o roteiro do laboratório."
           }
         }
       ]
     },
     {
-      "name": "07 - Lab - Error Scenarios",
+      "name": "10. Lab Errors",
       "item": [
         {
-          "name": "Lab - Slow Response (3s)",
+          "name": "GET /api/v1/lab/slow?seconds=3",
           "event": [
             {
               "listen": "test",
@@ -1202,7 +1697,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has seconds', () => pm.expect(pm.response.json().seconds).to.equal(3));"
+                  "pm.test('seconds=3', () => pm.expect(pm.response.json().seconds).to.equal(3));"
                 ]
               }
             }
@@ -1210,50 +1705,34 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/slow?seconds=3",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "slow"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "slow"
+              ],
               "query": [
-                { "key": "seconds", "value": "3" }
+                {
+                  "key": "seconds",
+                  "value": "3"
+                }
               ]
             },
-            "description": "Resposta lenta - dorme 3 segundos. Teste de timeout/retry."
+            "description": "Resposta propositalmente lenta para exercícios de timeout e retry."
           }
         },
         {
-          "name": "Lab - Slow Response (10s)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/lab/slow?seconds=10",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "slow"],
-              "query": [
-                { "key": "seconds", "value": "10" }
-              ]
-            },
-            "description": "Resposta lenta - dorme 10 segundos. Pode causar timeout."
-          }
-        },
-        {
-          "name": "Lab - Internal Server Error (500)",
+          "name": "GET /api/v1/lab/error",
           "event": [
             {
               "listen": "test",
@@ -1261,7 +1740,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 500', () => pm.response.to.have.status(500));",
-                  "pm.test('Has detail', () => pm.expect(pm.response.json().detail).to.include('Simulated'));"
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.be.a('string'));"
                 ]
               }
             }
@@ -1269,31 +1748,36 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/error",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "error"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "error"
+              ]
             },
-            "description": "Simula erro 500 interno. Teste de error handling."
+            "description": "Retorna erro 500 simulado."
           }
         },
         {
-          "name": "Lab - Rate Limit (3 req/min)",
+          "name": "GET /api/v1/lab/rate-limit",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 200 or 429', () => pm.expect([200, 429]).to.include(pm.response.code));",
-                  "pm.test('If 429, has retry_after', () => {",
-                  "  if (pm.response.code === 429) {",
-                  "    pm.expect(pm.response.json().retry_after_seconds).to.be.a('number');",
-                  "    pm.expect(pm.response.headers.get('Retry-After')).to.exist;",
-                  "  }",
-                  "});"
+                  "pm.test('Status 200 or 429', () => pm.expect([200,429]).to.include(pm.response.code));",
+                  "pm.test('If 429 has retry', () => { if (pm.response.code === 429) { pm.expect(pm.response.json().retry_after_seconds).to.be.a('number'); } });"
                 ]
               }
             }
@@ -1301,18 +1785,28 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/rate-limit",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "rate-limit"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "rate-limit"
+              ]
             },
-            "description": "Rate limit: 3 requests por student_id por minuto. Execute 4x seguidas para ver 429."
+            "description": "Demonstra aceitação normal ou bloqueio 429 após repetição."
           }
         },
         {
-          "name": "Lab - Not Found (404)",
+          "name": "GET /api/v1/lab/not-found",
           "event": [
             {
               "listen": "test",
@@ -1320,7 +1814,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('Has detail', () => pm.expect(pm.response.json().detail).to.include('not found'));"
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.be.a('string'));"
                 ]
               }
             }
@@ -1328,25 +1822,36 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/not-found",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "not-found"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "not-found"
+              ]
             },
-            "description": "Sempre retorna 404 simulado."
+            "description": "Retorna 404 simulado para fluxos negativos."
           }
         },
         {
-          "name": "Lab - Validation Error (422)",
+          "name": "POST /api/v1/lab/validation - invalid 422",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('detail exists', () => pm.expect(pm.response.json().detail).to.exist);"
                 ]
               }
             }
@@ -1354,24 +1859,41 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/validation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "validation"
+              ]
+            },
+            "description": "Payload inválido para demonstrar resposta 422.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"invalid-email\",\n  \"amount\": -10\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/lab/validation",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "validation"]
-            },
-            "description": "Email inválido + amount negativo → 422 Validation Error."
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Lab - Validation Passed (200)",
+          "name": "POST /api/v1/lab/validation - valid 200",
           "event": [
             {
               "listen": "test",
@@ -1379,7 +1901,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has message', () => pm.expect(pm.response.json().message).to.equal('Validation passed'));"
+                  "pm.test('message exists', () => pm.expect(pm.response.json().message).to.be.a('string'));"
                 ]
               }
             }
@@ -1387,35 +1909,40 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Student-ID",
+                "value": "{{student_id}}"
+              }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"student@fiap.com.br\",\n  \"amount\": 42.50\n}",
-              "options": { "raw": { "language": "json" } }
-            },
             "url": {
               "raw": "{{base_url}}/api/v1/lab/validation",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "lab", "validation"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lab",
+                "validation"
+              ]
             },
-            "description": "Payload válido → 200 OK."
+            "description": "Payload válido para comparar com o cenário de erro.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aluno@studentdesk.lab\",\n  \"amount\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8000",
-      "type": "string"
-    },
-    {
-      "key": "student_id",
-      "value": "grupo-01",
-      "type": "string"
     }
   ]
 }

@@ -1,41 +1,62 @@
 openapi: 3.1.0
 info:
-  title: FlowDesk Lab API
+  title: FIAP Student Desk Lab API
+  description: Central Inteligente de Solicitações Acadêmicas — pedagogical API for automation lab
   version: 1.0.0
-  description: >-
-    Standalone OpenAPI contract for the FlowDesk Lab API. This file is intended for
-    Swagger Editor, Postman import, and Dify tool import.
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 servers:
   - url: http://localhost:8000
     description: Local development server
 tags:
-  - name: Root
-    description: Service entrypoint metadata
   - name: Health
-    description: Service health and readiness
-  - name: Employees
-    description: Employee lookup endpoints
-  - name: Teams
-    description: Team routing endpoints
+    description: Service health and readiness checks
+  - name: Root
+    description: API entrypoint metadata
+  - name: Students
+    description: Student directory lookup endpoints
+  - name: Departments
+    description: Academic department routing and SLA reference
+  - name: Knowledge
+    description: Knowledge base browsing and search endpoints
   - name: Priority
-    description: Deterministic priority calculation
-  - name: Tickets
-    description: Ticket creation and retrieval
-  - name: Access Requests
-    description: Access request creation and approval
+    description: Deterministic priority evaluation for academic requests
+  - name: Requests
+    description: Student request creation, listing, and updates
+  - name: Interactions
+    description: Conversation and grounded-response logging
+  - name: Approvals
+    description: Human approval workflow endpoints for sensitive actions
   - name: Events
-    description: Audit event listing
+    description: Audit trail and event stream access
   - name: Lab - Failure Scenarios
-    description: Endpoints for simulating timeout, 404, 422, 429 and 500 cases
+    description: Deliberate timeout, 404, 422, 429 and 500 scenarios for workflow labs
 paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Get API health status
+      description: Returns a simple health payload for local checks and workflow readiness probes.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                service: fiap-student-desk-lab-api
+                version: 1.0.0
   /:
     get:
-      tags:
-        - Root
-      operationId: root
-      summary: Root endpoint
-      description: Return basic service entrypoint links for documentation, OpenAPI and health status.
+      tags: [Root]
+      operationId: getRoot
+      summary: Get root API metadata
+      description: Returns entrypoint links and service metadata for the lab API.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
@@ -47,99 +68,277 @@ paths:
               schema:
                 $ref: '#/components/schemas/RootResponse'
               example:
-                service: FlowDesk Lab API
+                service: FIAP Student Desk Lab API
                 docs: /docs
                 openapi: /openapi.json
                 health: /health
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /health:
+                description: Central Inteligente de Solicitações Acadêmicas
+  /api/v1/students:
     get:
-      tags:
-        - Health
-      operationId: health_check
-      summary: Health check endpoint
-      description: Returns service health status.
+      tags: [Students]
+      operationId: listStudents
+      summary: List students
+      description: Returns the fictional student directory used in classroom automation scenarios.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
-          description: Service is healthy
+          description: Students retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Student'
               example:
-                status: ok
-                service: flowdesk-lab-api
-                version: 1.0.0
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/employees/{employee_id}:
+                - id: STU001
+                  name: Ana Beatriz Souza
+                  course: Engenharia de Software
+                  semester: 4
+                  shift: night
+                  campus: Paulista
+                  email: ana.beatriz@studentdesk.lab
+                  status: active
+                - id: STU002
+                  name: Lucas Ferreira Lima
+                  course: Data Science
+                  semester: 2
+                  shift: morning
+                  campus: Vila Olímpia
+                  email: lucas.ferreira@studentdesk.lab
+                  status: active
+  /api/v1/students/{student_id}:
     get:
-      tags:
-        - Employees
-      operationId: get_employee
-      summary: Get employee by ID
-      description: Retrieve employee details by unique employee ID.
+      tags: [Students]
+      operationId: getStudentById
+      summary: Get student by ID
+      description: Retrieves a fictional student profile for testing request routing and enrichment flows.
       parameters:
-        - $ref: '#/components/parameters/EmployeeId'
+        - $ref: '#/components/parameters/StudentId'
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
-          description: Employee retrieved successfully
+          description: Student found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/Student'
               example:
-                id: EMP001
-                name: Ayla Mercer
-                department: Marketing
-                email: ayla.mercer@example.com
-                role: Analista
-                vip: false
+                id: STU001
+                name: Ana Beatriz Souza
+                course: Engenharia de Software
+                semester: 4
+                shift: night
+                campus: Paulista
+                email: ana.beatriz@studentdesk.lab
+                status: active
         '404':
-          $ref: '#/components/responses/NotFoundEmployee'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/teams/{category}:
+          $ref: '#/components/responses/NotFoundStudent'
+  /api/v1/departments:
     get:
-      tags:
-        - Teams
-      operationId: get_team
-      summary: Get team by category
-      description: Retrieve team info for a given category.
+      tags: [Departments]
+      operationId: listDepartments
+      summary: List departments
+      description: Returns all academic service departments available for request assignment.
       parameters:
-        - $ref: '#/components/parameters/CategoryPath'
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
-          description: Team retrieved successfully
+          description: Departments retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
               example:
-                category: it
-                team_name: IT Support
-                email: it@example.com
-                queue: technical-support
-                sla_default_hours: 4
+                - category: digital_learning
+                  department: Digital Learning Hub
+                  email: digital.learning@studentdesk.lab
+                  queue: digital-learning
+                  sla_default_hours: 4
+                  requires_human_for_sensitive_actions: false
+                - category: academic_records
+                  department: Academic Records Office
+                  email: academic.records@studentdesk.lab
+                  queue: academic-records
+                  sla_default_hours: 24
+                  requires_human_for_sensitive_actions: true
+                - category: finance
+                  department: Student Finance Desk
+                  email: finance@studentdesk.lab
+                  queue: finance
+                  sla_default_hours: 48
+                  requires_human_for_sensitive_actions: true
+                - category: career
+                  department: Career Services Center
+                  email: career@studentdesk.lab
+                  queue: career-services
+                  sla_default_hours: 24
+                  requires_human_for_sensitive_actions: false
+                - category: library
+                  department: Library Support
+                  email: library@studentdesk.lab
+                  queue: library-support
+                  sla_default_hours: 8
+                  requires_human_for_sensitive_actions: false
+                - category: campus_access
+                  department: Campus Access Control
+                  email: campus.access@studentdesk.lab
+                  queue: campus-access
+                  sla_default_hours: 2
+                  requires_human_for_sensitive_actions: true
+                - category: student_wellbeing
+                  department: Student Wellbeing Office
+                  email: wellbeing@studentdesk.lab
+                  queue: student-wellbeing
+                  sla_default_hours: 12
+                  requires_human_for_sensitive_actions: true
+                - category: accessibility
+                  department: Accessibility and Inclusion Center
+                  email: accessibility@studentdesk.lab
+                  queue: accessibility
+                  sla_default_hours: 24
+                  requires_human_for_sensitive_actions: true
+                - category: international_office
+                  department: International Office
+                  email: international@studentdesk.lab
+                  queue: international-office
+                  sla_default_hours: 48
+                  requires_human_for_sensitive_actions: true
+  /api/v1/departments/{category}:
+    get:
+      tags: [Departments]
+      operationId: getDepartmentByCategory
+      summary: Get department by category
+      description: Retrieves routing metadata for a single academic support category.
+      parameters:
+        - $ref: '#/components/parameters/DepartmentCategory'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Department found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+              example:
+                category: library
+                department: Library Support
+                email: library@studentdesk.lab
+                queue: library-support
+                sla_default_hours: 8
+                requires_human_for_sensitive_actions: false
         '404':
-          $ref: '#/components/responses/NotFoundTeam'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/NotFoundDepartment'
+  /api/v1/knowledge:
+    get:
+      tags: [Knowledge]
+      operationId: listKnowledgeArticles
+      summary: List knowledge articles
+      description: Returns all knowledge-base articles, with optional filtering by category.
+      parameters:
+        - $ref: '#/components/parameters/KnowledgeCategoryQuery'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Knowledge articles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KnowledgeArticle'
+              example:
+                - id: KB001
+                  title: Como recuperar acesso ao ambiente virtual
+                  category: digital_learning
+                  keywords: [ambiente virtual, senha, acesso]
+                  content: Acesse o portal, clique em Esqueci minha senha e valide seu e-mail acadêmico.
+                  can_answer_automatically: true
+                  requires_human: false
+                  last_updated: '2026-08-10T09:00:00Z'
+                  source_type: faq
+                - id: KB010
+                  title: Solicitação de declaração de matrícula
+                  category: academic_records
+                  keywords: [declaração, matrícula, documento]
+                  content: Gere a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+                  can_answer_automatically: true
+                  requires_human: false
+                  last_updated: '2026-08-21T14:30:00Z'
+                  source_type: policy_summary
+  /api/v1/knowledge/search:
+    get:
+      tags: [Knowledge]
+      operationId: searchKnowledge
+      summary: Search knowledge articles
+      description: Performs a simple keyword-style search across the fictional student support knowledge base.
+      parameters:
+        - $ref: '#/components/parameters/KnowledgeSearchQuery'
+        - $ref: '#/components/parameters/KnowledgeCategoryQuery'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Search results returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeSearchResponse'
+              example:
+                query: acesso ambiente
+                results:
+                  - id: KB001
+                    title: Como recuperar acesso ao ambiente virtual
+                    category: digital_learning
+                    score: 0.98
+                    content: Acesse o portal, clique em Esqueci minha senha e valide seu e-mail acadêmico.
+                  - id: KB002
+                    title: Primeiro acesso ao laboratório virtual
+                    category: digital_learning
+                    score: 0.81
+                    content: O primeiro login exige confirmação do e-mail institucional e redefinição de senha.
+  /api/v1/knowledge/{article_id}:
+    get:
+      tags: [Knowledge]
+      operationId: getKnowledgeArticleById
+      summary: Get knowledge article by ID
+      description: Retrieves a single knowledge article for grounded response generation.
+      parameters:
+        - $ref: '#/components/parameters/ArticleId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Knowledge article found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeArticle'
+              example:
+                id: KB001
+                title: Como recuperar acesso ao ambiente virtual
+                category: digital_learning
+                keywords: [ambiente virtual, senha, acesso]
+                content: Acesse o portal, clique em Esqueci minha senha e valide seu e-mail acadêmico.
+                can_answer_automatically: true
+                requires_human: false
+                last_updated: '2026-08-10T09:00:00Z'
+                source_type: faq
+        '404':
+          $ref: '#/components/responses/NotFoundKnowledgeArticle'
   /api/v1/priority/check:
     post:
-      tags:
-        - Priority
-      operationId: check_priority
-      summary: Check ticket priority
-      description: Deterministic priority calculation based on employee, category, impact and urgency.
+      tags: [Priority]
+      operationId: checkPriority
+      summary: Check request priority
+      description: Calculates deterministic priority and SLA based on category, impact, and urgency.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
@@ -150,71 +349,30 @@ paths:
             schema:
               $ref: '#/components/schemas/PriorityRequest'
             example:
-              employee_id: EMP001
-              category: it
+              student_id: STU001
+              category: digital_learning
               impact: high
               urgency: high
       responses:
         '200':
-          description: Priority calculated successfully
+          description: Priority evaluated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PriorityResponse'
               example:
                 priority: critical
-                sla_hours: 1
+                sla_hours: 2
                 requires_escalation: true
-                rule: high_high_impact_urgency
+                rule: high_impact_high_urgency
         '422':
           $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/tickets:
-    get:
-      tags:
-        - Tickets
-      operationId: list_tickets
-      summary: List tickets
-      description: List tickets with optional filters. Results are scoped by X-Student-ID.
-      parameters:
-        - $ref: '#/components/parameters/TicketEmployeeIdFilter'
-        - $ref: '#/components/parameters/TicketCategoryFilter'
-        - $ref: '#/components/parameters/TicketPriorityFilter'
-        - $ref: '#/components/parameters/TicketStatusFilter'
-        - $ref: '#/components/parameters/XStudentID'
-        - $ref: '#/components/parameters/XRequestID'
-      responses:
-        '200':
-          description: Tickets retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Ticket'
-              example:
-                - ticket_id: TK-1001
-                  status: open
-                  employee_id: EMP001
-                  category: it
-                  priority: critical
-                  assigned_team: IT Support
-                  queue: technical-support
-                  summary: Falha de conectividade no notebook
-                  description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
-                  source: n8n
-                  student_id: grupo-01
-                  created_at: '2026-09-11T10:00:00Z'
-                  updated_at: null
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+  /api/v1/requests:
     post:
-      tags:
-        - Tickets
-      operationId: create_ticket
-      summary: Create ticket
-      description: Create a new ticket and automatically assign the responsible team.
+      tags: [Requests]
+      operationId: createStudentRequest
+      summary: Create student request
+      description: Creates a new academic request and assigns the responsible department queue.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
@@ -223,243 +381,405 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TicketCreate'
+              $ref: '#/components/schemas/StudentRequestCreate'
             example:
-              employee_id: EMP001
-              category: it
-              impact: high
-              urgency: high
-              summary: Falha de conectividade no notebook
-              description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+              student_id: STU001
+              category: digital_learning
+              priority: high
+              summary: Não consigo acessar o ambiente virtual
+              description: O portal informa senha inválida mesmo após redefinição.
               source: n8n
       responses:
         '201':
-          description: Ticket created successfully
+          description: Student request created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Ticket'
+                $ref: '#/components/schemas/StudentRequest'
               example:
-                ticket_id: TK-1001
+                request_id: REQ-1001
+                protocol: SD-2026-0001
                 status: open
-                employee_id: EMP001
-                category: it
-                priority: critical
-                assigned_team: IT Support
-                queue: technical-support
-                summary: Falha de conectividade no notebook
-                description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+                student_id: STU001
+                category: digital_learning
+                priority: high
+                assigned_department: Digital Learning Hub
+                queue: digital-learning
+                summary: Não consigo acessar o ambiente virtual
+                description: O portal informa senha inválida mesmo após redefinição.
                 source: n8n
-                student_id: grupo-01
+                lab_student_id: grupo-01
                 created_at: '2026-09-11T10:00:00Z'
-                updated_at: null
+                updated_at: '2026-09-11T10:00:00Z'
         '422':
           $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/tickets/{ticket_id}:
     get:
-      tags:
-        - Tickets
-      operationId: get_ticket
-      summary: Get ticket by ID
-      description: Retrieve a ticket by its unique identifier.
+      tags: [Requests]
+      operationId: listStudentRequests
+      summary: List student requests
+      description: Lists requests scoped by X-Student-ID, with optional category, status, and priority filters.
       parameters:
-        - $ref: '#/components/parameters/TicketId'
+        - $ref: '#/components/parameters/RequestCategoryQuery'
+        - $ref: '#/components/parameters/RequestStatusQuery'
+        - $ref: '#/components/parameters/RequestPriorityQuery'
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
-          description: Ticket retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Ticket'
-              example:
-                ticket_id: TK-1001
-                status: open
-                employee_id: EMP001
-                category: it
-                priority: critical
-                assigned_team: IT Support
-                queue: technical-support
-                summary: Falha de conectividade no notebook
-                description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
-                source: n8n
-                student_id: grupo-01
-                created_at: '2026-09-11T10:00:00Z'
-                updated_at: null
-        '404':
-          $ref: '#/components/responses/NotFoundTicket'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/access-requests:
-    post:
-      tags:
-        - Access Requests
-      operationId: create_access_request
-      summary: Create access request
-      description: Create a new access request for a system or resource.
-      parameters:
-        - $ref: '#/components/parameters/XStudentID'
-        - $ref: '#/components/parameters/XRequestID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessRequestCreate'
-            example:
-              employee_id: EMP002
-              resource: production-server
-              justification: Maintenance window for critical patch deployment
-              risk: high
-      responses:
-        '201':
-          description: Access request created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessRequest'
-              example:
-                request_id: AR-501
-                employee_id: EMP002
-                resource: production-server
-                justification: Maintenance window for critical patch deployment
-                risk: high
-                status: pending_approval
-                requires_human_approval: true
-                approved_by: null
-                decision: null
-                decision_comment: null
-                decision_at: null
-                student_id: grupo-01
-                created_at: '2026-09-11T10:00:00Z'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/access-requests/{request_id}:
-    get:
-      tags:
-        - Access Requests
-      operationId: get_access_request
-      summary: Get access request by ID
-      description: Retrieve an access request by its unique identifier.
-      parameters:
-        - $ref: '#/components/parameters/AccessRequestId'
-        - $ref: '#/components/parameters/XStudentID'
-        - $ref: '#/components/parameters/XRequestID'
-      responses:
-        '200':
-          description: Access request retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessRequest'
-              example:
-                request_id: AR-501
-                employee_id: EMP002
-                resource: production-server
-                justification: Maintenance window for critical patch deployment
-                risk: high
-                status: pending_approval
-                requires_human_approval: true
-                approved_by: null
-                decision: null
-                decision_comment: null
-                decision_at: null
-                student_id: grupo-01
-                created_at: '2026-09-11T10:00:00Z'
-        '404':
-          $ref: '#/components/responses/NotFoundAccessRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/access-requests/{request_id}/approve:
-    post:
-      tags:
-        - Access Requests
-      operationId: approve_access_request
-      summary: Approve access request
-      description: Approve or reject an access request.
-      parameters:
-        - $ref: '#/components/parameters/AccessRequestId'
-        - $ref: '#/components/parameters/XStudentID'
-        - $ref: '#/components/parameters/XRequestID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessRequestApproval'
-            example:
-              approved_by: professor@fiap.com.br
-              decision: approved
-              decision_comment: Aprovado para demonstração em sala de aula.
-      responses:
-        '200':
-          description: Access request processed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessRequest'
-              example:
-                request_id: AR-501
-                employee_id: EMP002
-                resource: production-server
-                justification: Maintenance window for critical patch deployment
-                risk: high
-                status: approved
-                requires_human_approval: true
-                approved_by: professor@fiap.com.br
-                decision: approved
-                decision_comment: Aprovado para demonstração em sala de aula.
-                decision_at: '2026-09-11T10:15:00Z'
-                student_id: grupo-01
-                created_at: '2026-09-11T10:00:00Z'
-        '404':
-          $ref: '#/components/responses/NotFoundAccessRequest'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /api/v1/events:
-    get:
-      tags:
-        - Events
-      operationId: list_events
-      summary: List audit events
-      description: List audit events filtered by X-Student-ID, with optional event type filtering.
-      parameters:
-        - $ref: '#/components/parameters/EventTypeFilter'
-        - $ref: '#/components/parameters/XStudentID'
-        - $ref: '#/components/parameters/XRequestID'
-      responses:
-        '200':
-          description: Events retrieved successfully
+          description: Requests retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Event'
+                  $ref: '#/components/schemas/StudentRequest'
               example:
-                - event_id: EV-A1B2C3D4E5F6
-                  event_type: ticket_created
-                  student_id: grupo-01
+                - request_id: REQ-1001
+                  protocol: SD-2026-0001
+                  status: open
+                  student_id: STU001
+                  category: digital_learning
+                  priority: high
+                  assigned_department: Digital Learning Hub
+                  queue: digital-learning
+                  summary: Não consigo acessar o ambiente virtual
+                  description: O portal informa senha inválida mesmo após redefinição.
+                  source: n8n
+                  lab_student_id: grupo-01
+                  created_at: '2026-09-11T10:00:00Z'
+                  updated_at: '2026-09-11T10:00:00Z'
+  /api/v1/requests/{request_id}:
+    get:
+      tags: [Requests]
+      operationId: getStudentRequestById
+      summary: Get student request by ID
+      description: Retrieves a previously created academic request.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Request found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequest'
+              example:
+                request_id: REQ-1001
+                protocol: SD-2026-0001
+                status: open
+                student_id: STU001
+                category: digital_learning
+                priority: high
+                assigned_department: Digital Learning Hub
+                queue: digital-learning
+                summary: Não consigo acessar o ambiente virtual
+                description: O portal informa senha inválida mesmo após redefinição.
+                source: n8n
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+                updated_at: '2026-09-11T10:00:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+    patch:
+      tags: [Requests]
+      operationId: updateStudentRequest
+      summary: Update student request
+      description: Updates request status, priority, or assigned department after triage or human review.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRequestUpdate'
+            example:
+              status: in_progress
+              priority: critical
+              assigned_department: Campus Access Control
+      responses:
+        '200':
+          description: Request updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRequest'
+              example:
+                request_id: REQ-1003
+                protocol: SD-2026-0003
+                status: in_progress
+                student_id: STU003
+                category: campus_access
+                priority: critical
+                assigned_department: Campus Access Control
+                queue: campus-access
+                summary: Meu crachá parou de abrir a entrada principal
+                description: Estou bloqueado do lado de fora antes da prova prática.
+                source: api
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:20:00Z'
+                updated_at: '2026-09-11T10:35:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/interactions:
+    post:
+      tags: [Interactions]
+      operationId: createInteraction
+      summary: Create interaction log
+      description: Stores a classified or grounded interaction generated during the lab flow.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InteractionCreate'
+            example:
+              student_id: STU001
+              request_text: Preciso da declaração de matrícula para o estágio.
+              category: academic_records
+              response_type: grounded_answer
+              response_text: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+              knowledge_articles: [KB010]
+              source: dify
+      responses:
+        '201':
+          description: Interaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interaction'
+              example:
+                interaction_id: INT-3001
+                student_id: STU001
+                request_text: Preciso da declaração de matrícula para o estágio.
+                category: academic_records
+                response_type: grounded_answer
+                response_text: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+                knowledge_articles: [KB010]
+                source: dify
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:05:00Z'
+    get:
+      tags: [Interactions]
+      operationId: listInteractions
+      summary: List interactions
+      description: Lists logged interactions for workflow debugging and audit review.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Interactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Interaction'
+              example:
+                - interaction_id: INT-3001
+                  student_id: STU001
+                  request_text: Preciso da declaração de matrícula para o estágio.
+                  category: academic_records
+                  response_type: grounded_answer
+                  response_text: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+                  knowledge_articles: [KB010]
+                  source: dify
+                  lab_student_id: grupo-01
+                  created_at: '2026-09-11T10:05:00Z'
+  /api/v1/interactions/{interaction_id}:
+    get:
+      tags: [Interactions]
+      operationId: getInteractionById
+      summary: Get interaction by ID
+      description: Retrieves a single logged interaction.
+      parameters:
+        - $ref: '#/components/parameters/InteractionId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Interaction found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Interaction'
+              example:
+                interaction_id: INT-3001
+                student_id: STU001
+                request_text: Preciso da declaração de matrícula para o estágio.
+                category: academic_records
+                response_type: grounded_answer
+                response_text: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+                knowledge_articles: [KB010]
+                source: dify
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:05:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundInteraction'
+  /api/v1/approval-requests:
+    post:
+      tags: [Approvals]
+      operationId: createApprovalRequest
+      summary: Create approval request
+      description: Creates a sensitive academic action that may require human approval.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequestCreate'
+            example:
+              student_id: STU004
+              request_type: reissue_student_card
+              justification: O cartão foi perdido no deslocamento para o campus.
+              risk: high
+      responses:
+        '201':
+          description: Approval request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+              example:
+                approval_id: APR-7001
+                student_id: STU004
+                request_type: reissue_student_card
+                justification: O cartão foi perdido no deslocamento para o campus.
+                risk: high
+                status: pending_approval
+                requires_human_approval: true
+                approved_by: null
+                decision: null
+                decision_comment: null
+                decision_at: null
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:15:00Z'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/approval-requests/{approval_id}:
+    get:
+      tags: [Approvals]
+      operationId: getApprovalRequestById
+      summary: Get approval request by ID
+      description: Retrieves the status of a human approval workflow item.
+      parameters:
+        - $ref: '#/components/parameters/ApprovalId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Approval request found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+              example:
+                approval_id: APR-7001
+                student_id: STU004
+                request_type: reissue_student_card
+                justification: O cartão foi perdido no deslocamento para o campus.
+                risk: high
+                status: pending_approval
+                requires_human_approval: true
+                approved_by: null
+                decision: null
+                decision_comment: null
+                decision_at: null
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:15:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundApprovalRequest'
+  /api/v1/approval-requests/{approval_id}/decision:
+    post:
+      tags: [Approvals]
+      operationId: decideApprovalRequest
+      summary: Decide approval request
+      description: Records an approval or rejection decision for a previously created approval request.
+      parameters:
+        - $ref: '#/components/parameters/ApprovalId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecision'
+            example:
+              decision: approved
+              approved_by: tutor.lab@fiap.fake
+              comment: Aprovado na simulação para continuidade do atendimento.
+      responses:
+        '200':
+          description: Approval decision recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+              example:
+                approval_id: APR-7001
+                student_id: STU004
+                request_type: reissue_student_card
+                justification: O cartão foi perdido no deslocamento para o campus.
+                risk: high
+                status: approved
+                requires_human_approval: true
+                approved_by: tutor.lab@fiap.fake
+                decision: approved
+                decision_comment: Aprovado na simulação para continuidade do atendimento.
+                decision_at: '2026-09-11T10:25:00Z'
+                lab_student_id: grupo-01
+                created_at: '2026-09-11T10:15:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundApprovalRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/v1/events:
+    get:
+      tags: [Events]
+      operationId: listAuditEvents
+      summary: List audit events
+      description: Lists fictional audit events generated by request, interaction, and approval flows.
+      parameters:
+        - $ref: '#/components/parameters/EventTypeQuery'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Audit events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEvent'
+              example:
+                - event_id: EVT-9001
+                  event_type: request_created
+                  student_id: STU001
                   timestamp: '2026-09-11T10:00:00Z'
-                  resource_type: ticket
-                  resource_id: TK-1001
-                  metadata_json: '{"category":"it","priority":"critical"}'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  resource_type: request
+                  resource_id: REQ-1001
+                  metadata_json: '{"category":"digital_learning","priority":"high"}'
   /api/v1/lab/slow:
     get:
-      tags:
-        - Lab - Failure Scenarios
-      operationId: lab_slow
-      summary: Slow response simulation
-      description: Sleep for the requested number of seconds and then return a delayed success response.
+      tags: ['Lab - Failure Scenarios']
+      operationId: getLabSlowScenario
+      summary: Simulate slow response
+      description: Sleeps for the requested number of seconds before returning a success payload.
       parameters:
         - $ref: '#/components/parameters/LabSlowSeconds'
         - $ref: '#/components/parameters/XStudentID'
@@ -476,15 +796,12 @@ paths:
                 seconds: 3
         '422':
           $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
   /api/v1/lab/error:
     get:
-      tags:
-        - Lab - Failure Scenarios
-      operationId: lab_error
-      summary: Internal server error simulation
-      description: Always raises an HTTP 500 error to simulate an internal server failure.
+      tags: ['Lab - Failure Scenarios']
+      operationId: getLabErrorScenario
+      summary: Simulate internal server error
+      description: Always returns a 500 response for classroom error-handling exercises.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
@@ -499,17 +816,16 @@ paths:
                 detail: Simulated internal server error
   /api/v1/lab/rate-limit:
     get:
-      tags:
-        - Lab - Failure Scenarios
-      operationId: lab_rate_limit
-      summary: Rate limit simulation
-      description: Applies a simple in-memory rate limit of three requests per student within sixty seconds.
+      tags: ['Lab - Failure Scenarios']
+      operationId: getLabRateLimitScenario
+      summary: Simulate rate limiting
+      description: Returns 200 while under the threshold and 429 once the demo limit is exceeded.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
-          description: Request accepted within rate limit
+          description: Request accepted within the rate limit window
           content:
             application/json:
               schema:
@@ -530,36 +846,30 @@ paths:
               example:
                 detail: Too many requests
                 retry_after_seconds: 10
-        '500':
-          $ref: '#/components/responses/InternalServerError'
   /api/v1/lab/not-found:
     get:
-      tags:
-        - Lab - Failure Scenarios
-      operationId: lab_not_found
-      summary: Not found simulation
-      description: Always raises an HTTP 404 error to simulate a missing resource.
+      tags: ['Lab - Failure Scenarios']
+      operationId: getLabNotFoundScenario
+      summary: Simulate not found
+      description: Always returns a 404 response for negative-path testing.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
       responses:
         '404':
-          description: Resource not found (simulated)
+          description: Resource not found in the simulated scenario
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
               example:
                 detail: Resource not found (simulated)
-        '500':
-          $ref: '#/components/responses/InternalServerError'
   /api/v1/lab/validation:
     post:
-      tags:
-        - Lab - Failure Scenarios
-      operationId: lab_validation
-      summary: Validation error simulation
-      description: Validate an email and non-negative amount payload.
+      tags: ['Lab - Failure Scenarios']
+      operationId: postLabValidationScenario
+      summary: Simulate validation behaviour
+      description: Validates a small payload so workflow tools can observe 200 and 422 responses.
       parameters:
         - $ref: '#/components/parameters/XStudentID'
         - $ref: '#/components/parameters/XRequestID'
@@ -570,8 +880,8 @@ paths:
             schema:
               $ref: '#/components/schemas/LabValidationRequest'
             example:
-              email: student@flowdesk.lab
-              amount: 42.5
+              email: aluno@studentdesk.lab
+              amount: 15
       responses:
         '200':
           description: Validation passed
@@ -581,12 +891,10 @@ paths:
                 $ref: '#/components/schemas/LabValidationResponse'
               example:
                 message: Validation passed
-                email: student@flowdesk.lab
-                amount: 42.5
+                email: aluno@studentdesk.lab
+                amount: 15
         '422':
           $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
 components:
   headers:
     RetryAfter:
@@ -599,7 +907,7 @@ components:
       name: X-Student-ID
       in: header
       required: false
-      description: Student identifier used for didactic request scoping.
+      description: Lab group identifier used to isolate records across student groups.
       schema:
         type: string
         default: anonymous
@@ -608,81 +916,104 @@ components:
       name: X-Request-ID
       in: header
       required: false
-      description: Request correlation ID for traceability in workflows.
+      description: Correlation ID for workflow tracing in lab exercises.
       schema:
         type: string
-        default: anonymous
-        example: req-12345
-    EmployeeId:
-      name: employee_id
+        example: req-student-desk-001
+    StudentId:
+      name: student_id
       in: path
       required: true
-      description: Employee identifier.
+      description: Fictional student identifier.
       schema:
         type: string
-        example: EMP001
-    CategoryPath:
+        example: STU001
+    DepartmentCategory:
       name: category
       in: path
       required: true
-      description: Support category key.
+      description: Department category key.
       schema:
         type: string
-        enum: [it, hr, finance, facilities, security, other]
-        example: it
-    TicketId:
-      name: ticket_id
+        example: digital_learning
+    ArticleId:
+      name: article_id
       in: path
       required: true
-      description: Ticket identifier.
+      description: Knowledge article identifier.
       schema:
         type: string
-        example: TK-1001
-    AccessRequestId:
+        example: KB001
+    RequestId:
       name: request_id
       in: path
       required: true
-      description: Access request identifier.
+      description: Student request identifier.
       schema:
         type: string
-        example: AR-501
-    TicketEmployeeIdFilter:
-      name: employee_id
+        example: REQ-1001
+    InteractionId:
+      name: interaction_id
+      in: path
+      required: true
+      description: Interaction identifier.
+      schema:
+        type: string
+        example: INT-3001
+    ApprovalId:
+      name: approval_id
+      in: path
+      required: true
+      description: Approval request identifier.
+      schema:
+        type: string
+        example: APR-7001
+    KnowledgeSearchQuery:
+      name: q
+      in: query
+      required: true
+      description: Search query text.
+      schema:
+        type: string
+        example: acesso ambiente
+    KnowledgeCategoryQuery:
+      name: category
       in: query
       required: false
+      description: Optional category filter for knowledge articles.
       schema:
         type: string
-        example: EMP001
-    TicketCategoryFilter:
+        example: digital_learning
+    RequestCategoryQuery:
       name: category
       in: query
       required: false
       schema:
         type: string
-        enum: [it, hr, finance, facilities, security, other]
-        example: it
-    TicketPriorityFilter:
+        example: finance
+    RequestStatusQuery:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [open, in_progress, waiting_human, resolved, closed]
+        example: open
+    RequestPriorityQuery:
       name: priority
       in: query
       required: false
       schema:
         type: string
         enum: [low, medium, high, critical]
-        example: critical
-    TicketStatusFilter:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-        example: open
-    EventTypeFilter:
+        example: high
+    EventTypeQuery:
       name: event_type
       in: query
       required: false
       schema:
         type: string
-        example: ticket_created
+        example: request_created
     LabSlowSeconds:
       name: seconds
       in: query
@@ -706,130 +1037,210 @@ components:
               - loc: [body, amount]
                 msg: Input should be greater than or equal to 0
                 type: greater_than_equal
-    InternalServerError:
-      description: Internal server error
+    NotFoundStudent:
+      description: Student not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorMessage'
           example:
-            detail: Internal server error
-    NotFoundEmployee:
-      description: Employee not found
+            detail: Student not found
+    NotFoundDepartment:
+      description: Department not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorMessage'
           example:
-            detail: Employee not found
-    NotFoundTeam:
-      description: Team not found
+            detail: 'Department not found for category: invalid'
+    NotFoundKnowledgeArticle:
+      description: Knowledge article not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorMessage'
           example:
-            detail: 'Team not found for category: unknown'
-    NotFoundTicket:
-      description: Ticket not found
+            detail: Knowledge article not found
+    NotFoundRequest:
+      description: Student request not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorMessage'
           example:
-            detail: Ticket not found
-    NotFoundAccessRequest:
-      description: Access request not found
+            detail: Student request not found
+    NotFoundInteraction:
+      description: Interaction not found
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorMessage'
           example:
-            detail: Access request not found
+            detail: Interaction not found
+    NotFoundApprovalRequest:
+      description: Approval request not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: Approval request not found
   schemas:
     RootResponse:
       type: object
       properties:
         service:
           type: string
-          example: FlowDesk Lab API
         docs:
           type: string
-          example: /docs
         openapi:
           type: string
-          example: /openapi.json
         health:
           type: string
-          example: /health
-      required: [service, docs, openapi, health]
+        description:
+          type: string
+      required: [service, docs, openapi, health, description]
     HealthResponse:
       type: object
       properties:
         status:
           type: string
-          example: ok
         service:
           type: string
-          example: flowdesk-lab-api
         version:
           type: string
-          example: 1.0.0
       required: [status, service, version]
-    Employee:
+    Student:
       type: object
       properties:
         id:
           type: string
-          example: EMP001
+          example: STU001
         name:
           type: string
-          example: Ayla Mercer
-        department:
+          example: Ana Beatriz Souza
+        course:
           type: string
-          example: Marketing
+          example: Engenharia de Software
+        semester:
+          type: integer
+          example: 4
+        shift:
+          type: string
+          enum: [morning, afternoon, night]
+          example: night
+        campus:
+          type: string
+          example: Paulista
         email:
           type: string
           format: email
-          example: ayla.mercer@example.com
-        role:
+          example: ana.beatriz@studentdesk.lab
+        status:
           type: string
-          example: Analista
-        vip:
-          type: boolean
-          example: false
-      required: [id, name, department, email, role, vip]
-    Team:
+          enum: [active, inactive, on_leave]
+          example: active
+      required: [id, name, course, semester, shift, campus, email, status]
+    Department:
       type: object
       properties:
         category:
           type: string
-          enum: [it, hr, finance, facilities, security, other]
-          example: it
-        team_name:
+          enum: [digital_learning, academic_records, finance, career, library, campus_access, student_wellbeing, accessibility, international_office]
+          example: digital_learning
+        department:
           type: string
-          example: IT Support
+          example: Digital Learning Hub
         email:
           type: string
           format: email
-          example: it@example.com
+          example: digital.learning@studentdesk.lab
         queue:
           type: string
-          example: technical-support
+          example: digital-learning
         sla_default_hours:
           type: integer
           example: 4
-      required: [category, team_name, email, queue, sla_default_hours]
+        requires_human_for_sensitive_actions:
+          type: boolean
+          example: false
+      required: [category, department, email, queue, sla_default_hours, requires_human_for_sensitive_actions]
+    KnowledgeArticle:
+      type: object
+      properties:
+        id:
+          type: string
+          example: KB001
+        title:
+          type: string
+          example: Como recuperar acesso ao ambiente virtual
+        category:
+          type: string
+          example: digital_learning
+        keywords:
+          type: array
+          items:
+            type: string
+          example: [ambiente virtual, senha, acesso]
+        content:
+          type: string
+          example: Acesse o portal, clique em Esqueci minha senha e valide seu e-mail acadêmico.
+        can_answer_automatically:
+          type: boolean
+          example: true
+        requires_human:
+          type: boolean
+          example: false
+        last_updated:
+          type: string
+          format: date-time
+          example: '2026-08-10T09:00:00Z'
+        source_type:
+          type: string
+          enum: [faq, policy_summary, process_guide, campus_notice]
+          example: faq
+      required: [id, title, category, keywords, content, can_answer_automatically, requires_human, last_updated, source_type]
+    KnowledgeSearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+          example: KB001
+        title:
+          type: string
+          example: Como recuperar acesso ao ambiente virtual
+        category:
+          type: string
+          example: digital_learning
+        score:
+          type: number
+          format: float
+          example: 0.98
+        content:
+          type: string
+          example: Acesse o portal, clique em Esqueci minha senha e valide seu e-mail acadêmico.
+      required: [id, title, category, score, content]
+    KnowledgeSearchResponse:
+      type: object
+      properties:
+        query:
+          type: string
+          example: acesso ambiente
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeSearchResult'
+      required: [query, results]
     PriorityRequest:
       type: object
       properties:
-        employee_id:
+        student_id:
           type: string
-          example: EMP001
+          example: STU001
         category:
           type: string
-          enum: [it, hr, finance, facilities, security, other]
-          example: it
+          enum: [digital_learning, academic_records, finance, career, library, campus_access, student_wellbeing, accessibility, international_office]
+          example: digital_learning
         impact:
           type: string
           enum: [low, medium, high]
@@ -838,7 +1249,7 @@ components:
           type: string
           enum: [low, medium, high]
           example: high
-      required: [employee_id, category, impact, urgency]
+      required: [student_id, category, impact, urgency]
     PriorityResponse:
       type: object
       properties:
@@ -848,79 +1259,54 @@ components:
           example: critical
         sla_hours:
           type: integer
-          example: 1
+          example: 2
         requires_escalation:
           type: boolean
           example: true
         rule:
           type: string
-          example: high_high_impact_urgency
+          example: high_impact_high_urgency
       required: [priority, sla_hours, requires_escalation, rule]
-    TicketCreate:
+    StudentRequest:
       type: object
       properties:
-        employee_id:
+        request_id:
           type: string
-          example: EMP001
-        category:
+          example: REQ-1001
+        protocol:
           type: string
-          enum: [it, hr, finance, facilities, security, other]
-          example: it
-        impact:
-          type: string
-          enum: [low, medium, high]
-          example: high
-        urgency:
-          type: string
-          enum: [low, medium, high]
-          example: high
-        summary:
-          type: string
-          example: Falha de conectividade no notebook
-        description:
-          type: string
-          example: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
-        source:
-          type: string
-          example: n8n
-          default: api
-      required: [employee_id, category, impact, urgency, summary, description]
-    Ticket:
-      type: object
-      properties:
-        ticket_id:
-          type: string
-          example: TK-1001
+          example: SD-2026-0001
         status:
           type: string
+          enum: [open, in_progress, waiting_human, resolved, closed]
           example: open
-        employee_id:
+        student_id:
           type: string
-          example: EMP001
+          example: STU001
         category:
           type: string
-          enum: [it, hr, finance, facilities, security, other]
-          example: it
+          example: digital_learning
         priority:
           type: string
           enum: [low, medium, high, critical]
-          example: critical
-        assigned_team:
+          example: high
+        assigned_department:
           type: string
-          example: IT Support
+          example: Digital Learning Hub
         queue:
           type: string
-          example: technical-support
+          example: digital-learning
         summary:
           type: string
-          example: Falha de conectividade no notebook
+          example: Não consigo acessar o ambiente virtual
         description:
           type: string
-          example: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+          example: O portal informa senha inválida mesmo após redefinição.
         source:
           type: string
+          enum: [api, n8n, make, dify, postman]
           example: n8n
-        student_id:
+        lab_student_id:
           type: string
           example: grupo-01
         created_at:
@@ -928,150 +1314,223 @@ components:
           format: date-time
           example: '2026-09-11T10:00:00Z'
         updated_at:
-          type:
-            - string
-            - 'null'
+          type: string
           format: date-time
-          example: null
-      required:
-        - ticket_id
-        - status
-        - employee_id
-        - category
-        - priority
-        - assigned_team
-        - queue
-        - summary
-        - description
-        - source
-        - student_id
-        - created_at
-        - updated_at
-    AccessRequestCreate:
+          example: '2026-09-11T10:00:00Z'
+      required: [request_id, protocol, status, student_id, category, priority, assigned_department, queue, summary, description, source, lab_student_id, created_at, updated_at]
+    StudentRequestCreate:
       type: object
       properties:
-        employee_id:
+        student_id:
           type: string
-          example: EMP002
-        resource:
+          example: STU001
+        category:
           type: string
-          example: production-server
-        justification:
+          enum: [digital_learning, academic_records, finance, career, library, campus_access, student_wellbeing, accessibility, international_office]
+          example: digital_learning
+        priority:
           type: string
-          example: Maintenance window for critical patch deployment
-        risk:
-          type: string
-          enum: [low, medium, high]
+          enum: [low, medium, high, critical]
           example: high
-      required: [employee_id, resource, justification, risk]
-    AccessRequestApproval:
+        summary:
+          type: string
+          example: Não consigo acessar o ambiente virtual
+        description:
+          type: string
+          example: O portal informa senha inválida mesmo após redefinição.
+        source:
+          type: string
+          enum: [api, n8n, make, dify, postman]
+          default: api
+          example: n8n
+      required: [student_id, category, priority, summary, description, source]
+    StudentRequestUpdate:
       type: object
       properties:
-        approved_by:
+        status:
           type: string
-          example: professor@fiap.com.br
-        decision:
+          enum: [open, in_progress, waiting_human, resolved, closed]
+          example: in_progress
+        priority:
           type: string
-          enum: [approved, rejected]
-          example: approved
-        decision_comment:
-          type:
-            - string
-            - 'null'
-          example: Aprovado para demonstração em sala de aula.
-      required: [approved_by, decision]
-    AccessRequest:
+          enum: [low, medium, high, critical]
+          example: critical
+        assigned_department:
+          type: string
+          example: Campus Access Control
+      minProperties: 1
+    Interaction:
       type: object
       properties:
-        request_id:
+        interaction_id:
           type: string
-          example: AR-501
-        employee_id:
+          example: INT-3001
+        student_id:
           type: string
-          example: EMP002
-        resource:
+          example: STU001
+        request_text:
           type: string
-          example: production-server
+          example: Preciso da declaração de matrícula para o estágio.
+        category:
+          type: string
+          example: academic_records
+        response_type:
+          type: string
+          enum: [grounded_answer, request_created, escalation, clarification]
+          example: grounded_answer
+        response_text:
+          type: string
+          example: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+        knowledge_articles:
+          type: array
+          items:
+            type: string
+          example: [KB010]
+        source:
+          type: string
+          enum: [api, n8n, make, dify, postman]
+          example: dify
+        lab_student_id:
+          type: string
+          example: grupo-01
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:05:00Z'
+      required: [interaction_id, student_id, request_text, category, response_type, response_text, knowledge_articles, source, lab_student_id, created_at]
+    InteractionCreate:
+      type: object
+      properties:
+        student_id:
+          type: string
+          example: STU001
+        request_text:
+          type: string
+          example: Preciso da declaração de matrícula para o estágio.
+        category:
+          type: string
+          example: academic_records
+        response_type:
+          type: string
+          enum: [grounded_answer, request_created, escalation, clarification]
+          example: grounded_answer
+        response_text:
+          type: string
+          example: Você pode emitir a declaração no portal do aluno em Serviços Acadêmicos > Documentos.
+        knowledge_articles:
+          type: array
+          items:
+            type: string
+          example: [KB010]
+        source:
+          type: string
+          enum: [api, n8n, make, dify, postman]
+          default: api
+          example: dify
+      required: [student_id, request_text, category, response_type, response_text, knowledge_articles, source]
+    ApprovalRequest:
+      type: object
+      properties:
+        approval_id:
+          type: string
+          example: APR-7001
+        student_id:
+          type: string
+          example: STU004
+        request_type:
+          type: string
+          example: reissue_student_card
         justification:
           type: string
-          example: Maintenance window for critical patch deployment
+          example: O cartão foi perdido no deslocamento para o campus.
         risk:
           type: string
           enum: [low, medium, high]
           example: high
         status:
           type: string
+          enum: [auto_approved, pending_approval, approved, rejected]
           example: pending_approval
         requires_human_approval:
           type: boolean
           example: true
         approved_by:
-          type:
-            - string
-            - 'null'
+          type: [string, 'null']
           example: null
         decision:
-          type:
-            - string
-            - 'null'
+          type: [string, 'null']
           example: null
         decision_comment:
-          type:
-            - string
-            - 'null'
+          type: [string, 'null']
           example: null
         decision_at:
-          type:
-            - string
-            - 'null'
+          type: [string, 'null']
           format: date-time
           example: null
-        student_id:
+        lab_student_id:
           type: string
           example: grupo-01
         created_at:
           type: string
           format: date-time
-          example: '2026-09-11T10:00:00Z'
-      required:
-        - request_id
-        - employee_id
-        - resource
-        - justification
-        - risk
-        - status
-        - requires_human_approval
-        - approved_by
-        - decision
-        - decision_comment
-        - decision_at
-        - student_id
-        - created_at
-    Event:
+          example: '2026-09-11T10:15:00Z'
+      required: [approval_id, student_id, request_type, justification, risk, status, requires_human_approval, approved_by, decision, decision_comment, decision_at, lab_student_id, created_at]
+    ApprovalRequestCreate:
+      type: object
+      properties:
+        student_id:
+          type: string
+          example: STU004
+        request_type:
+          type: string
+          example: reissue_student_card
+        justification:
+          type: string
+          example: O cartão foi perdido no deslocamento para o campus.
+        risk:
+          type: string
+          enum: [low, medium, high]
+          example: high
+      required: [student_id, request_type, justification, risk]
+    ApprovalDecision:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+          example: approved
+        approved_by:
+          type: string
+          example: tutor.lab@fiap.fake
+        comment:
+          type: string
+          example: Aprovado na simulação para continuidade do atendimento.
+      required: [decision, approved_by, comment]
+    AuditEvent:
       type: object
       properties:
         event_id:
           type: string
-          example: EV-A1B2C3D4E5F6
+          example: EVT-9001
         event_type:
           type: string
-          example: ticket_created
+          example: request_created
         student_id:
           type: string
-          example: grupo-01
+          example: STU001
         timestamp:
           type: string
           format: date-time
           example: '2026-09-11T10:00:00Z'
         resource_type:
           type: string
-          example: ticket
+          example: request
         resource_id:
           type: string
-          example: TK-1001
+          example: REQ-1001
         metadata_json:
           type: string
-          example: '{"category":"it","priority":"critical"}'
+          example: '{"category":"digital_learning","priority":"high"}'
       required: [event_id, event_type, student_id, timestamp, resource_type, resource_id, metadata_json]
     LabSlowResponse:
       type: object
@@ -1102,11 +1561,11 @@ components:
         email:
           type: string
           format: email
-          example: student@flowdesk.lab
+          example: aluno@studentdesk.lab
         amount:
           type: number
           minimum: 0
-          example: 42.5
+          example: 15
       required: [email, amount]
     LabValidationResponse:
       type: object
@@ -1117,17 +1576,17 @@ components:
         email:
           type: string
           format: email
-          example: student@flowdesk.lab
+          example: aluno@studentdesk.lab
         amount:
           type: number
-          example: 42.5
+          example: 15
       required: [message, email, amount]
     ErrorMessage:
       type: object
       properties:
         detail:
           type: string
-          example: Employee not found
+          example: Resource not found (simulated)
       required: [detail]
     RateLimitError:
       type: object
@@ -1148,13 +1607,10 @@ components:
             oneOf:
               - type: string
               - type: integer
-          example: [body, email]
         msg:
           type: string
-          example: value is not a valid email address
         type:
           type: string
-          example: value_error
       required: [loc, msg, type]
     HTTPValidationError:
       type: object

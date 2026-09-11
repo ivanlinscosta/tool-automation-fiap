@@ -1,218 +1,61 @@
-# FlowDesk Lab com Make
+# Make Lab: FIAP Student Desk Lab
 
-## Visão geral
+Este guia descreve como implementar os cenários de automação para a Central Inteligente de Solicitações Acadêmicas utilizando o Make (antigo Integromat).
 
-Este guia mostra como reproduzir no Make os principais padrões trabalhados com a FlowDesk Lab API:
+## Visão Geral do Cenário
+O objetivo é reproduzir a lógica de atendimento inteligente:
+1. Receber a mensagem.
+2. Identificar o aluno.
+3. Classificar a intenção com IA.
+4. Buscar na base de conhecimento.
+5. Decidir entre responder ou criar uma solicitação.
 
-- entrada via webhook
-- chamadas HTTP
-- branching com Router
-- filtros
-- parsing JSON
-- criação de ticket
+## Módulos Necessários
+- **Custom Webhook:** Ponto de entrada para a mensagem do aluno.
+- **HTTP - Make a request:** Para todas as interações com a API.
+- **OpenAI (ou outro módulo de LLM):** Para classificação e geração de resposta.
+- **Router:** Para desviar o fluxo entre resposta automática e criação de solicitação.
+- **JSON - Parse JSON:** Para processar as saídas estruturadas do LLM.
 
-Base URL usada nos exemplos:
+## Estrutura do Cenário Principal
 
-```text
-http://localhost:8000
-```
+### 1. Entrada e Identificação
+- **Custom Webhook:** Recebe `student_id` e `message`.
+- **HTTP (Get Student):** 
+  - Method: `GET`
+  - URL: `http://localhost:8000/api/v1/students/{{student_id}}`
+  - Headers: `X-Student-ID: seu-grupo`
 
-> Antes de construir o cenário, valide em `/docs` e `/openapi.json` se a instância ativa está expondo os endpoints esperados pelo laboratório.
+### 2. Inteligência e Classificação
+- **OpenAI (Create a Chat Completion):**
+  - Prompt: Peça para classificar a mensagem em categoria, intenção, impacto, urgência e gerar uma `search_query`.
+  - Output: JSON estruturado.
+- **JSON (Parse JSON):** Transforma a string do LLM em campos mapeáveis no Make.
 
-Header didático sugerido:
+### 3. Busca de Conhecimento
+- **HTTP (Knowledge Search):**
+  - Method: `GET`
+  - URL: `http://localhost:8000/api/v1/knowledge/search?q={{search_query}}&category={{category}}`
 
-```text
-X-Student-ID: grupo-07
-```
+### 4. Roteamento (Router)
+Adicione um **Router** após a busca.
 
-## Cenário 1 — Explorer simples
+#### Rota A: Resposta Automática (Filtro: `needs_human` é falso E resultados encontrados)
+- **OpenAI (Generate Response):** Gera a resposta baseada nos artigos.
+- **HTTP (Register Interaction):** POST `/api/v1/interactions`.
+- **Webhook Response:** Devolve a resposta ao aluno.
 
-### Módulos
+#### Rota B: Criar Solicitação (Filtro: `needs_human` é verdadeiro OU nenhum resultado encontrado)
+- **HTTP (Priority Check):** POST `/api/v1/priority/check`.
+- **HTTP (Get Department):** GET `/api/v1/departments/{{category}}`.
+- **HTTP (Create Request):** POST `/api/v1/requests`.
+- **Webhook Response:** Devolve o número do protocolo.
 
-```text
-Custom Webhook → HTTP Make a request → Webhook response
-```
+## Tratamento de Erros no Make
+- **Directives:** Utilize as diretivas `Break` ou `Retry` nos módulos HTTP para lidar com instabilidades.
+- **Error Handler Route:** Clique com o botão direito no módulo HTTP e selecione "Add error handler" para tratar erros 429 ou 500 de forma personalizada.
 
-### 1. Custom Webhook
-
-Recebe um payload como:
-
-```json
-{
-  "employee_id": "EMP001"
-}
-```
-
-### 2. HTTP - Make a request
-
-- **Method:** `GET`
-- **URL:** `http://localhost:8000/api/v1/employees/{{1.employee_id}}`
-- **Headers:**
-
-```text
-X-Student-ID: grupo-07
-X-Request-ID: make-explorer-001
-```
-
-### 3. Webhook response
-
-Retorne o JSON do módulo HTTP diretamente ou monte uma resposta menor com os campos necessários.
-
-## Cenário 2 — Triage com roteamento
-
-### Módulos
-
-```text
-Custom Webhook → HTTP Get Employee → AI/LLM step → Parse JSON → HTTP Check Priority → Router → HTTP Get Team → HTTP Create Ticket → Webhook response
-```
-
-### Passos principais
-
-#### A. HTTP Get Employee
-
-```text
-GET http://localhost:8000/api/v1/employees/{{1.employee_id}}
-```
-
-#### B. AI/LLM step
-
-Peça ao modelo um JSON com:
-
-```json
-{
-  "category": "it|hr|finance|facilities|security|other",
-  "impact": "low|medium|high",
-  "urgency": "low|medium|high",
-  "summary": "...",
-  "description": "..."
-}
-```
-
-#### C. Parse JSON
-
-Use um módulo de parse/transform para validar o JSON retornado pelo LLM antes da chamada à API.
-
-#### D. HTTP Check Priority
-
-- **Method:** `POST`
-- **URL:** `http://localhost:8000/api/v1/priority/check`
-- **Headers:** `Content-Type: application/json`, `X-Student-ID: grupo-07`
-- **Body:**
-
-```json
-{
-  "employee_id": "{{1.employee_id}}",
-  "category": "{{parse.category}}",
-  "impact": "{{parse.impact}}",
-  "urgency": "{{parse.urgency}}"
-}
-```
-
-#### E. Router
-
-Crie ramos para `it`, `hr`, `finance`, `facilities`, `security` e `other`.
-
-#### F. Filters
-
-Em cada ramo, aplique filtros como:
-
-```text
-category = it
-category = hr
-category = security
-```
-
-#### G. HTTP Get Team
-
-```text
-GET http://localhost:8000/api/v1/teams/{{parse.category}}
-```
-
-#### H. HTTP Create Ticket
-
-- **Method:** `POST`
-- **URL:** `http://localhost:8000/api/v1/tickets`
-- **Body:**
-
-```json
-{
-  "employee_id": "{{1.employee_id}}",
-  "category": "{{parse.category}}",
-  "impact": "{{parse.impact}}",
-  "urgency": "{{parse.urgency}}",
-  "summary": "{{parse.summary}}",
-  "description": "{{parse.description}}",
-  "source": "make"
-}
-```
-
-## Cenário 3 — Tratamento de erro
-
-### Endpoints didáticos
-
-- `/api/v1/lab/slow?seconds=10`
-- `/api/v1/lab/error`
-- `/api/v1/lab/rate-limit`
-
-### Estratégias no Make
-
-- use timeout curto no módulo HTTP
-- crie rotas de erro para fallback
-- registre retries em variáveis ou logs do cenário
-- respeite o header `Retry-After` em exercícios de 429
-
-## Cenário 4 — Human-in-the-Loop
-
-### Fluxo sugerido
-
-```text
-Webhook → LLM Risk Assessment → HTTP Create Access Request → Router/Filter → aprovação humana → HTTP Approve Access Request
-```
-
-### Regras da API
-
-- `risk = low` → `auto_approved`
-- `risk = medium` ou `high` → `pending_approval`
-
-### Body de criação
-
-```json
-{
-  "employee_id": "EMP006",
-  "resource": "Security Admin Console",
-  "justification": "Investigação de alertas e suporte operacional.",
-  "risk": "high"
-}
-```
-
-### Body de aprovação
-
-```json
-{
-  "approved_by": "manager@flowdesk.lab",
-  "decision": "approved",
-  "decision_comment": "Approved after classroom review."
-}
-```
-
-## Comparação rápida: Make vs n8n
-
-| Tema | n8n | Make |
-|------|-----|------|
-| Entrada HTTP | Webhook node | Custom Webhook module |
-| API call | HTTP Request | HTTP - Make a request |
-| Branching | Switch / IF | Router + Filters |
-| Manipulação de dados | Expressions e Set/Code | Mapping visual e módulos de parse |
-| Erros | Error Trigger, retries por node | Error handlers e rotas de erro do cenário |
-| Estilo | canvas com nodes | cenário orientado a módulos |
-
-## Quando usar cada abordagem em aula
-
-- **n8n:** ótimo para visualizar o fluxo completo e demonstrar expressões
-- **Make:** ótimo para mostrar roteamento modular e filtros por ramo
-
-## Dicas
-
-- fixe `X-Student-ID` por equipe
-- use `source: "make"` ao abrir tickets
-- comece com Explorer simples antes do triage com LLM
+## Dicas de Configuração
+- **Headers:** Lembre-se de sempre enviar o `Content-Type: application/json` em requisições POST.
+- **Mapping:** Use o painel de mapeamento do Make para arrastar os campos do `Parse JSON` para os módulos seguintes.
+- **Filtros:** No Router, configure as condições de filtragem clicando na linha que conecta os módulos.
