@@ -1,25 +1,26 @@
 {
   "info": {
     "name": "FlowDesk Lab API",
-    "description": "Postman collection for the FlowDesk Lab API running locally.",
+    "description": "Collection completa da API FlowDesk Lab para laboratório de automação.\n\nBase URL: use a variável {{base_url}}.\nStudent ID: use o header X-Student-ID via variável {{student_id}}.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "7fe24f73-c99e-445e-9284-54f53249617b"
   },
   "item": [
     {
-      "name": "Health",
+      "name": "00 - Root & Health",
       "item": [
         {
-          "name": "Root",
+          "name": "Root - Service Info",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has docs link', () => pm.expect(pm.response.json().docs).to.equal('/docs'));",
+                  "pm.test('Has openapi link', () => pm.expect(pm.response.json().openapi).to.equal('/openapi.json'));",
+                  "pm.test('Has health link', () => pm.expect(pm.response.json().health).to.equal('/health'));"
                 ]
               }
             }
@@ -27,16 +28,14 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-root-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/",
               "host": ["{{base_url}}"],
               "path": []
             },
-            "description": "Returns service metadata and links."
+            "description": "Retorna links de navegação da API (docs, openapi, health)."
           }
         },
         {
@@ -47,9 +46,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status ok', () => pm.expect(pm.response.json().status).to.equal('ok'));",
+                  "pm.test('Service name', () => pm.expect(pm.response.json().service).to.equal('flowdesk-lab-api'));",
+                  "pm.test('Version present', () => pm.expect(pm.response.json().version).to.exist);"
                 ]
               }
             }
@@ -57,34 +57,36 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-health-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/health",
               "host": ["{{base_url}}"],
               "path": ["health"]
             },
-            "description": "Health check endpoint."
+            "description": "Health check. Usado pelo Railway para verificar se o serviço está ativo."
           }
         }
       ]
     },
     {
-      "name": "Employees",
+      "name": "01 - Employees",
       "item": [
         {
-          "name": "Get Employee",
+          "name": "Get Employee - EMP001",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has id', () => pm.expect(pm.response.json().id).to.equal('EMP001'));",
+                  "pm.test('Has name', () => pm.expect(pm.response.json().name).to.be.a('string'));",
+                  "pm.test('Has department', () => pm.expect(pm.response.json().department).to.be.a('string'));",
+                  "pm.test('Has email', () => pm.expect(pm.response.json().email).to.include('@'));",
+                  "pm.test('Has role', () => pm.expect(pm.response.json().role).to.be.a('string'));",
+                  "pm.test('Has vip', () => pm.expect(pm.response.json().vip).to.be.a('boolean'));"
                 ]
               }
             }
@@ -92,28 +94,26 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-employee-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/employees/EMP001",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "employees", "EMP001"]
-            }
+            },
+            "description": "Consulta funcionário EMP001 (Ayla Mercer, Marketing)."
           }
         },
         {
-          "name": "Get Employee - Not Found",
+          "name": "Get Employee - EMP002 (VIP)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 404\", function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is VIP', () => pm.expect(pm.response.json().vip).to.be.true);"
                 ]
               }
             }
@@ -121,33 +121,89 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-employee-404" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/employees/EMP002",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "employees", "EMP002"]
+            },
+            "description": "Consulta funcionário EMP002 (Dario Flint, IT, VIP)."
+          }
+        },
+        {
+          "name": "Get Employee - EMP006 (VIP)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is VIP', () => pm.expect(pm.response.json().vip).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/employees/EMP006",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "employees", "EMP006"]
+            },
+            "description": "Consulta funcionário EMP006 (Theo Ravel, Security, VIP)."
+          }
+        },
+        {
+          "name": "Get Employee - Not Found (EMP999)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error detail', () => pm.expect(pm.response.json().detail).to.equal('Employee not found'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/employees/EMP999",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "employees", "EMP999"]
-            }
+            },
+            "description": "Teste de erro 404 - funcionário inexistente."
           }
         }
       ]
     },
     {
-      "name": "Teams",
+      "name": "02 - Teams",
       "item": [
         {
-          "name": "Get Team",
+          "name": "Get Team - IT",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Category is it', () => pm.expect(pm.response.json().category).to.equal('it'));",
+                  "pm.test('Team is IT Support', () => pm.expect(pm.response.json().team).to.equal('IT Support'));",
+                  "pm.test('Has email', () => pm.expect(pm.response.json().email).to.include('@'));",
+                  "pm.test('Has queue', () => pm.expect(pm.response.json().queue).to.be.a('string'));",
+                  "pm.test('Has sla', () => pm.expect(pm.response.json().sla_default_hours).to.be.a('number'));"
                 ]
               }
             }
@@ -155,33 +211,195 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-team-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/teams/it",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "teams", "it"]
-            }
+            },
+            "description": "Equipe de TI - SLA padrão 4h."
           }
-        }
-      ]
-    },
-    {
-      "name": "Priority",
-      "item": [
+        },
         {
-          "name": "Check Priority",
+          "name": "Get Team - HR",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Team is Human Resources', () => pm.expect(pm.response.json().team).to.equal('Human Resources'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/hr",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "hr"]
+            },
+            "description": "Equipe de RH - SLA padrão 8h."
+          }
+        },
+        {
+          "name": "Get Team - Finance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Team is Finance', () => pm.expect(pm.response.json().team).to.equal('Finance'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/finance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "finance"]
+            },
+            "description": "Equipe Financeira - SLA padrão 12h."
+          }
+        },
+        {
+          "name": "Get Team - Facilities",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Team is Facilities', () => pm.expect(pm.response.json().team).to.equal('Facilities'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/facilities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "facilities"]
+            },
+            "description": "Equipe de Infraestrutura - SLA padrão 6h."
+          }
+        },
+        {
+          "name": "Get Team - Security",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Team is Security', () => pm.expect(pm.response.json().team).to.equal('Security'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/security",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "security"]
+            },
+            "description": "Equipe de Segurança - SLA padrão 2h."
+          }
+        },
+        {
+          "name": "Get Team - Other",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Team is General Support', () => pm.expect(pm.response.json().team).to.equal('General Support'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/other",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "other"]
+            },
+            "description": "Equipe Geral - SLA padrão 24h."
+          }
+        },
+        {
+          "name": "Get Team - Not Found (invalid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error detail', () => pm.expect(pm.response.json().detail).to.include('Team not found'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/invalid",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "invalid"]
+            },
+            "description": "Teste de erro 404 - categoria inexistente."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Priority",
+      "item": [
+        {
+          "name": "Priority - High Impact + High Urgency = Critical",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Priority is critical', () => pm.expect(pm.response.json().priority).to.equal('critical'));",
+                  "pm.test('SLA is 1h', () => pm.expect(pm.response.json().sla_hours).to.equal(1));",
+                  "pm.test('Requires escalation', () => pm.expect(pm.response.json().requires_escalation).to.be.true);"
                 ]
               }
             }
@@ -190,41 +408,32 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-priority-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/v1/priority/check",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "priority", "check"]
-            }
+            },
+            "description": "impact=high + urgency=high → priority=critical, SLA=1h, escalation=true"
           }
-        }
-      ]
-    },
-    {
-      "name": "Tickets",
-      "item": [
+        },
         {
-          "name": "Create Ticket",
+          "name": "Priority - Medium + Medium = Medium",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Priority is medium', () => pm.expect(pm.response.json().priority).to.equal('medium'));",
+                  "pm.test('SLA is 6h', () => pm.expect(pm.response.json().sla_hours).to.equal(6));"
                 ]
               }
             }
@@ -233,36 +442,272 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-ticket-create-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Falha de conectividade no notebook\",\n  \"description\": \"Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.\",\n  \"source\": \"n8n\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"medium\",\n  \"urgency\": \"medium\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            },
+            "description": "impact=medium + urgency=medium → priority=medium, SLA=6h"
+          }
+        },
+        {
+          "name": "Priority - Low + Low = Low",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Priority is low', () => pm.expect(pm.response.json().priority).to.equal('low'));",
+                  "pm.test('SLA is 24h', () => pm.expect(pm.response.json().sla_hours).to.equal(24));"
+                ]
               }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            },
+            "description": "impact=low + urgency=low → priority=low, SLA=24h"
+          }
+        },
+        {
+          "name": "Priority - Security Override (High Urgency)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Priority is critical', () => pm.expect(pm.response.json().priority).to.equal('critical'));",
+                  "pm.test('Rule has security', () => pm.expect(pm.response.json().rule).to.include('security'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"security\",\n  \"impact\": \"low\",\n  \"urgency\": \"high\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            },
+            "description": "security + urgency=high → priority=critical (security override)"
+          }
+        },
+        {
+          "name": "Priority - Security Override (Low Urgency)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Priority is high', () => pm.expect(pm.response.json().priority).to.equal('high'));",
+                  "pm.test('Rule has security', () => pm.expect(pm.response.json().rule).to.include('security'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"security\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            },
+            "description": "security + urgency=low → priority=high (security override mínimo)"
+          }
+        },
+        {
+          "name": "Priority - Invalid Impact (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"invalid\",\n  \"urgency\": \"high\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            },
+            "description": "Teste de validação 422 - impacto inválido."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Tickets",
+      "item": [
+        {
+          "name": "Create Ticket - WiFi Issue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.match(/^TK-/));",
+                  "pm.test('Status is open', () => pm.expect(pm.response.json().status).to.equal('open'));",
+                  "pm.test('Has assigned_team', () => pm.expect(pm.response.json().assigned_team).to.be.a('string'));",
+                  "pm.environment.set('last_ticket_id', pm.response.json().ticket_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Notebook sem Wi-Fi\",\n  \"description\": \"Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.\",\n  \"source\": \"n8n\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/v1/tickets",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "tickets"]
-            }
+            },
+            "description": "Cria ticket de problema de Wi-Fi. Prioridade calculada automaticamente."
           }
         },
         {
-          "name": "Get Ticket",
+          "name": "Create Ticket - Phishing",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200 or 404\", function () {",
-                  "    pm.expect([200, 404]).to.include(pm.response.code);",
-                  "});"
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.match(/^TK-/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP003\",\n  \"category\": \"security\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Email de phishing recebido\",\n  \"description\": "Recebi um email suspeito pedindo credenciais. Cliquei no link antes de perceber.\",\n  \"source\": \"postman\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"]
+            },
+            "description": "Cria ticket de segurança - phishing. Categoria security com override de prioridade."
+          }
+        },
+        {
+          "name": "Create Ticket - Low Priority",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Priority is low', () => pm.expect(pm.response.json().priority).to.equal('low'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP005\",\n  \"category\": \"facilities\",\n  \"impact\": \"low\",\n  \"urgency\": \"low\",\n  \"summary\": \"Falta de papel na impressora\",\n  \"description\": \"O papel da impressora do 3o andar acabou.\",\n  \"source\": \"api\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"]
+            },
+            "description": "Ticket de baixa prioridade - falta de papel."
+          }
+        },
+        {
+          "name": "Get Ticket by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has ticket_id', () => pm.expect(pm.response.json().ticket_id).to.be.a('string'));"
                 ]
               }
             }
@@ -270,28 +715,25 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-ticket-get-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/tickets/TK-1001",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "tickets", "TK-1001"]
-            }
+            },
+            "description": "Consulta ticket específico por ID."
           }
         },
         {
-          "name": "List Tickets",
+          "name": "Get Ticket - Not Found",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
                 ]
               }
             }
@@ -299,9 +741,91 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-ticket-list-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/TK-9999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets", "TK-9999"]
+            },
+            "description": "Teste 404 - ticket inexistente."
+          }
+        },
+        {
+          "name": "List All Tickets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"]
+            },
+            "description": "Lista todos os tickets do student_id atual."
+          }
+        },
+        {
+          "name": "List Tickets - Filter by Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets?category=it",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"],
+              "query": [
+                { "key": "category", "value": "it" }
+              ]
+            },
+            "description": "Lista tickets filtrados por categoria IT."
+          }
+        },
+        {
+          "name": "List Tickets - Filter by Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/tickets?employee_id=EMP001",
@@ -310,25 +834,87 @@
               "query": [
                 { "key": "employee_id", "value": "EMP001" }
               ]
-            }
+            },
+            "description": "Lista tickets do funcionário EMP001."
           }
-        }
-      ]
-    },
-    {
-      "name": "Access Requests",
-      "item": [
+        },
         {
-          "name": "Create Access Request",
+          "name": "List Tickets - Filter by Priority",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets?priority=critical",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"],
+              "query": [
+                { "key": "priority", "value": "critical" }
+              ]
+            },
+            "description": "Lista tickets com prioridade crítica."
+          }
+        },
+        {
+          "name": "List Tickets - Filter by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets?status=open",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"],
+              "query": [
+                { "key": "status", "value": "open" }
+              ]
+            },
+            "description": "Lista tickets abertos."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Access Requests",
+      "item": [
+        {
+          "name": "Create Access Request - High Risk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Requires approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.true);",
+                  "pm.test('Status pending', () => pm.expect(pm.response.json().status).to.equal('pending_approval'));",
+                  "pm.environment.set('last_access_request_id', pm.response.json().request_id);"
                 ]
               }
             }
@@ -337,36 +923,99 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-access-create-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"employee_id\": \"EMP002\",\n  \"resource\": \"production-server\",\n  \"justification\": \"Maintenance window for critical patch deployment\",\n  \"risk\": \"high\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/v1/access-requests",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "access-requests"]
-            }
+            },
+            "description": "Solicitação de alto risco - requer aprovação humana."
           }
         },
         {
-          "name": "Get Access Request",
+          "name": "Create Access Request - Low Risk (Auto-Approved)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200 or 404\", function () {",
-                  "    pm.expect([200, 404]).to.include(pm.response.code);",
-                  "});"
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Auto-approved', () => pm.expect(pm.response.json().status).to.equal('auto_approved'));",
+                  "pm.test('No human approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP005\",\n  \"resource\": \"office-supplies\",\n  \"justification\": \"Need paper and pens for meeting room\",\n  \"risk\": \"low\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests"]
+            },
+            "description": "Solicitação de baixo risco - aprovada automaticamente."
+          }
+        },
+        {
+          "name": "Create Access Request - Medium Risk",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Requires approval', () => pm.expect(pm.response.json().requires_human_approval).to.be.true);",
+                  "pm.test('Status pending', () => pm.expect(pm.response.json().status).to.equal('pending_approval'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP008\",\n  \"resource\": \"customer-database\",\n  \"justification\": "Need read access for quarterly report analysis\",\n  \"risk\": \"medium\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests"]
+            },
+            "description": "Solicitação de médio risco - requer aprovação."
+          }
+        },
+        {
+          "name": "Get Access Request by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has request_id', () => pm.expect(pm.response.json().request_id).to.match(/^AR-/));"
                 ]
               }
             }
@@ -374,15 +1023,40 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-access-get-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/access-requests/AR-501",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "access-requests", "AR-501"]
+            },
+            "description": "Consulta solicitação de acesso por ID."
+          }
+        },
+        {
+          "name": "Get Access Request - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
             }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests/AR-999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests", "AR-999"]
+            },
+            "description": "Teste 404 - solicitação inexistente."
           }
         },
         {
@@ -393,9 +1067,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200 or 404\", function () {",
-                  "    pm.expect([200, 404]).to.include(pm.response.code);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status approved', () => pm.expect(pm.response.json().status).to.equal('approved'));",
+                  "pm.test('Has approved_by', () => pm.expect(pm.response.json().approved_by).to.be.a('string'));",
+                  "pm.test('Has decision_at', () => pm.expect(pm.response.json().decision_at).to.be.a('string'));"
                 ]
               }
             }
@@ -404,41 +1079,68 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-access-approve-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision\": \"approved\",\n  \"decision_comment\": \"Aprovado para demonstração em sala de aula.\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"decision\": \"approved\",\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision_comment\": \"Aprovado para demonstração em sala de aula.\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/v1/access-requests/AR-501/approve",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "access-requests", "AR-501", "approve"]
-            }
+            },
+            "description": "Aprova solicitação de acesso pendente."
           }
-        }
-      ]
-    },
-    {
-      "name": "Events",
-      "item": [
+        },
         {
-          "name": "List Events",
+          "name": "Reject Access Request",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"rejected\",\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision_comment\": \"Rejeitado para demonstração de fluxo de rejeição.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests/AR-501/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests", "AR-501", "approve"]
+            },
+            "description": "Rejeita solicitação de acesso (pode retornar 404 se já processada)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Events (Audit)",
+      "item": [
+        {
+          "name": "List All Events",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
@@ -446,33 +1148,26 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-events-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/events",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "events"]
-            }
+            },
+            "description": "Lista eventos de auditoria do student_id atual."
           }
-        }
-      ]
-    },
-    {
-      "name": "Lab - Failure Scenarios",
-      "item": [
+        },
         {
-          "name": "Lab - Slow",
+          "name": "List Events - Filter by Type",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
                 ]
               }
             }
@@ -480,9 +1175,42 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-lab-slow-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/events?event_type=ticket_created",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "events"],
+              "query": [
+                { "key": "event_type", "value": "ticket_created" }
+              ]
+            },
+            "description": "Lista eventos de criação de ticket."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Lab - Error Scenarios",
+      "item": [
+        {
+          "name": "Lab - Slow Response (3s)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has seconds', () => pm.expect(pm.response.json().seconds).to.equal(3));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/slow?seconds=3",
@@ -491,20 +1219,19 @@
               "query": [
                 { "key": "seconds", "value": "3" }
               ]
-            }
+            },
+            "description": "Resposta lenta - dorme 3 segundos. Teste de timeout/retry."
           }
         },
         {
-          "name": "Lab - Error",
+          "name": "Lab - Slow Response (10s)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 500\", function () {",
-                  "    pm.response.to.have.status(500);",
-                  "});"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -512,27 +1239,60 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-lab-error-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/slow?seconds=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "slow"],
+              "query": [
+                { "key": "seconds", "value": "10" }
+              ]
+            },
+            "description": "Resposta lenta - dorme 10 segundos. Pode causar timeout."
+          }
+        },
+        {
+          "name": "Lab - Internal Server Error (500)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 500', () => pm.response.to.have.status(500));",
+                  "pm.test('Has detail', () => pm.expect(pm.response.json().detail).to.include('Simulated'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/error",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "lab", "error"]
-            }
+            },
+            "description": "Simula erro 500 interno. Teste de error handling."
           }
         },
         {
-          "name": "Lab - Rate Limit",
+          "name": "Lab - Rate Limit (3 req/min)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 200 or 429\", function () {",
-                  "    pm.expect([200, 429]).to.include(pm.response.code);",
+                  "pm.test('Status 200 or 429', () => pm.expect([200, 429]).to.include(pm.response.code));",
+                  "pm.test('If 429, has retry_after', () => {",
+                  "  if (pm.response.code === 429) {",
+                  "    pm.expect(pm.response.json().retry_after_seconds).to.be.a('number');",
+                  "    pm.expect(pm.response.headers.get('Retry-After')).to.exist;",
+                  "  }",
                   "});"
                 ]
               }
@@ -541,28 +1301,26 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-lab-rate-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/rate-limit",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "lab", "rate-limit"]
-            }
+            },
+            "description": "Rate limit: 3 requests por student_id por minuto. Execute 4x seguidas para ver 429."
           }
         },
         {
-          "name": "Lab - Not Found",
+          "name": "Lab - Not Found (404)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 404\", function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});"
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Has detail', () => pm.expect(pm.response.json().detail).to.include('not found'));"
                 ]
               }
             }
@@ -570,28 +1328,25 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-lab-notfound-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/lab/not-found",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "lab", "not-found"]
-            }
+            },
+            "description": "Sempre retorna 404 simulado."
           }
         },
         {
-          "name": "Lab - Validation Error",
+          "name": "Lab - Validation Error (422)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});"
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
                 ]
               }
             }
@@ -600,23 +1355,52 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "X-Student-ID", "value": "{{student_id}}" },
-              { "key": "X-Request-ID", "value": "postman-lab-validation-001" }
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"invalid-email\",\n  \"amount\": -10\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{base_url}}/api/v1/lab/validation",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "lab", "validation"]
+            },
+            "description": "Email inválido + amount negativo → 422 Validation Error."
+          }
+        },
+        {
+          "name": "Lab - Validation Passed (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has message', () => pm.expect(pm.response.json().message).to.equal('Validation passed'));"
+                ]
+              }
             }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@fiap.com.br\",\n  \"amount\": 42.50\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/validation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "validation"]
+            },
+            "description": "Payload válido → 200 OK."
           }
         }
       ]
@@ -625,11 +1409,13 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8000"
+      "value": "http://localhost:8000",
+      "type": "string"
     },
     {
       "key": "student_id",
-      "value": "grupo-01"
+      "value": "grupo-01",
+      "type": "string"
     }
   ]
 }
