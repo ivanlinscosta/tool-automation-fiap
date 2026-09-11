@@ -2,8 +2,15 @@ __pycache__
 *.pyc
 .git
 .venv
+venv
 .env
 *.db
+*.sqlite3
 .pytest_cache
 .mypy_cache
-tests/
+*.egg-info
+dist
+build
+.DS_Store
+*.log
+*.tmp
