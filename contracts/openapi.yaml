@@ -1,0 +1,1166 @@
+openapi: 3.1.0
+info:
+  title: FlowDesk Lab API
+  version: 1.0.0
+  description: >-
+    Standalone OpenAPI contract for the FlowDesk Lab API. This file is intended for
+    Swagger Editor, Postman import, and Dify tool import.
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+tags:
+  - name: Root
+    description: Service entrypoint metadata
+  - name: Health
+    description: Service health and readiness
+  - name: Employees
+    description: Employee lookup endpoints
+  - name: Teams
+    description: Team routing endpoints
+  - name: Priority
+    description: Deterministic priority calculation
+  - name: Tickets
+    description: Ticket creation and retrieval
+  - name: Access Requests
+    description: Access request creation and approval
+  - name: Events
+    description: Audit event listing
+  - name: Lab - Failure Scenarios
+    description: Endpoints for simulating timeout, 404, 422, 429 and 500 cases
+paths:
+  /:
+    get:
+      tags:
+        - Root
+      operationId: root
+      summary: Root endpoint
+      description: Return basic service entrypoint links for documentation, OpenAPI and health status.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Root metadata returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootResponse'
+              example:
+                service: FlowDesk Lab API
+                docs: /docs
+                openapi: /openapi.json
+                health: /health
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /health:
+    get:
+      tags:
+        - Health
+      operationId: health_check
+      summary: Health check endpoint
+      description: Returns service health status.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                service: flowdesk-lab-api
+                version: 1.0.0
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/employees/{employee_id}:
+    get:
+      tags:
+        - Employees
+      operationId: get_employee
+      summary: Get employee by ID
+      description: Retrieve employee details by unique employee ID.
+      parameters:
+        - $ref: '#/components/parameters/EmployeeId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Employee retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+              example:
+                id: EMP001
+                name: Ayla Mercer
+                department: Marketing
+                email: ayla.mercer@example.com
+                role: Analista
+                vip: false
+        '404':
+          $ref: '#/components/responses/NotFoundEmployee'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/teams/{category}:
+    get:
+      tags:
+        - Teams
+      operationId: get_team
+      summary: Get team by category
+      description: Retrieve team info for a given category.
+      parameters:
+        - $ref: '#/components/parameters/CategoryPath'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Team retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+              example:
+                category: it
+                team_name: IT Support
+                email: it@example.com
+                queue: technical-support
+                sla_default_hours: 4
+        '404':
+          $ref: '#/components/responses/NotFoundTeam'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/priority/check:
+    post:
+      tags:
+        - Priority
+      operationId: check_priority
+      summary: Check ticket priority
+      description: Deterministic priority calculation based on employee, category, impact and urgency.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriorityRequest'
+            example:
+              employee_id: EMP001
+              category: it
+              impact: high
+              urgency: high
+      responses:
+        '200':
+          description: Priority calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriorityResponse'
+              example:
+                priority: critical
+                sla_hours: 1
+                requires_escalation: true
+                rule: high_high_impact_urgency
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/tickets:
+    get:
+      tags:
+        - Tickets
+      operationId: list_tickets
+      summary: List tickets
+      description: List tickets with optional filters. Results are scoped by X-Student-ID.
+      parameters:
+        - $ref: '#/components/parameters/TicketEmployeeIdFilter'
+        - $ref: '#/components/parameters/TicketCategoryFilter'
+        - $ref: '#/components/parameters/TicketPriorityFilter'
+        - $ref: '#/components/parameters/TicketStatusFilter'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Tickets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+              example:
+                - ticket_id: TK-1001
+                  status: open
+                  employee_id: EMP001
+                  category: it
+                  priority: critical
+                  assigned_team: IT Support
+                  queue: technical-support
+                  summary: Falha de conectividade no notebook
+                  description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+                  source: n8n
+                  student_id: grupo-01
+                  created_at: '2026-09-11T10:00:00Z'
+                  updated_at: null
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Tickets
+      operationId: create_ticket
+      summary: Create ticket
+      description: Create a new ticket and automatically assign the responsible team.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreate'
+            example:
+              employee_id: EMP001
+              category: it
+              impact: high
+              urgency: high
+              summary: Falha de conectividade no notebook
+              description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+              source: n8n
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+              example:
+                ticket_id: TK-1001
+                status: open
+                employee_id: EMP001
+                category: it
+                priority: critical
+                assigned_team: IT Support
+                queue: technical-support
+                summary: Falha de conectividade no notebook
+                description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+                source: n8n
+                student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+                updated_at: null
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/tickets/{ticket_id}:
+    get:
+      tags:
+        - Tickets
+      operationId: get_ticket
+      summary: Get ticket by ID
+      description: Retrieve a ticket by its unique identifier.
+      parameters:
+        - $ref: '#/components/parameters/TicketId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Ticket retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+              example:
+                ticket_id: TK-1001
+                status: open
+                employee_id: EMP001
+                category: it
+                priority: critical
+                assigned_team: IT Support
+                queue: technical-support
+                summary: Falha de conectividade no notebook
+                description: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+                source: n8n
+                student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+                updated_at: null
+        '404':
+          $ref: '#/components/responses/NotFoundTicket'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/access-requests:
+    post:
+      tags:
+        - Access Requests
+      operationId: create_access_request
+      summary: Create access request
+      description: Create a new access request for a system or resource.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessRequestCreate'
+            example:
+              employee_id: EMP002
+              resource: production-server
+              justification: Maintenance window for critical patch deployment
+              risk: high
+      responses:
+        '201':
+          description: Access request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessRequest'
+              example:
+                request_id: AR-501
+                employee_id: EMP002
+                resource: production-server
+                justification: Maintenance window for critical patch deployment
+                risk: high
+                status: pending_approval
+                requires_human_approval: true
+                approved_by: null
+                decision: null
+                decision_comment: null
+                decision_at: null
+                student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/access-requests/{request_id}:
+    get:
+      tags:
+        - Access Requests
+      operationId: get_access_request
+      summary: Get access request by ID
+      description: Retrieve an access request by its unique identifier.
+      parameters:
+        - $ref: '#/components/parameters/AccessRequestId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Access request retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessRequest'
+              example:
+                request_id: AR-501
+                employee_id: EMP002
+                resource: production-server
+                justification: Maintenance window for critical patch deployment
+                risk: high
+                status: pending_approval
+                requires_human_approval: true
+                approved_by: null
+                decision: null
+                decision_comment: null
+                decision_at: null
+                student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundAccessRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/access-requests/{request_id}/approve:
+    post:
+      tags:
+        - Access Requests
+      operationId: approve_access_request
+      summary: Approve access request
+      description: Approve or reject an access request.
+      parameters:
+        - $ref: '#/components/parameters/AccessRequestId'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessRequestApproval'
+            example:
+              approved_by: professor@fiap.com.br
+              decision: approved
+              decision_comment: Aprovado para demonstração em sala de aula.
+      responses:
+        '200':
+          description: Access request processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessRequest'
+              example:
+                request_id: AR-501
+                employee_id: EMP002
+                resource: production-server
+                justification: Maintenance window for critical patch deployment
+                risk: high
+                status: approved
+                requires_human_approval: true
+                approved_by: professor@fiap.com.br
+                decision: approved
+                decision_comment: Aprovado para demonstração em sala de aula.
+                decision_at: '2026-09-11T10:15:00Z'
+                student_id: grupo-01
+                created_at: '2026-09-11T10:00:00Z'
+        '404':
+          $ref: '#/components/responses/NotFoundAccessRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/events:
+    get:
+      tags:
+        - Events
+      operationId: list_events
+      summary: List audit events
+      description: List audit events filtered by X-Student-ID, with optional event type filtering.
+      parameters:
+        - $ref: '#/components/parameters/EventTypeFilter'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+              example:
+                - event_id: EV-A1B2C3D4E5F6
+                  event_type: ticket_created
+                  student_id: grupo-01
+                  timestamp: '2026-09-11T10:00:00Z'
+                  resource_type: ticket
+                  resource_id: TK-1001
+                  metadata_json: '{"category":"it","priority":"critical"}'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/lab/slow:
+    get:
+      tags:
+        - Lab - Failure Scenarios
+      operationId: lab_slow
+      summary: Slow response simulation
+      description: Sleep for the requested number of seconds and then return a delayed success response.
+      parameters:
+        - $ref: '#/components/parameters/LabSlowSeconds'
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Delayed response returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabSlowResponse'
+              example:
+                message: Response after 3 seconds
+                seconds: 3
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/lab/error:
+    get:
+      tags:
+        - Lab - Failure Scenarios
+      operationId: lab_error
+      summary: Internal server error simulation
+      description: Always raises an HTTP 500 error to simulate an internal server failure.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '500':
+          description: Simulated internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              example:
+                detail: Simulated internal server error
+  /api/v1/lab/rate-limit:
+    get:
+      tags:
+        - Lab - Failure Scenarios
+      operationId: lab_rate_limit
+      summary: Rate limit simulation
+      description: Applies a simple in-memory rate limit of three requests per student within sixty seconds.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '200':
+          description: Request accepted within rate limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabRateLimitSuccess'
+              example:
+                message: Request accepted
+                student_id: grupo-01
+                requests_in_window: 2
+        '429':
+          description: Too many requests
+          headers:
+            Retry-After:
+              $ref: '#/components/headers/RetryAfter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitError'
+              example:
+                detail: Too many requests
+                retry_after_seconds: 10
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/lab/not-found:
+    get:
+      tags:
+        - Lab - Failure Scenarios
+      operationId: lab_not_found
+      summary: Not found simulation
+      description: Always raises an HTTP 404 error to simulate a missing resource.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      responses:
+        '404':
+          description: Resource not found (simulated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              example:
+                detail: Resource not found (simulated)
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/lab/validation:
+    post:
+      tags:
+        - Lab - Failure Scenarios
+      operationId: lab_validation
+      summary: Validation error simulation
+      description: Validate an email and non-negative amount payload.
+      parameters:
+        - $ref: '#/components/parameters/XStudentID'
+        - $ref: '#/components/parameters/XRequestID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabValidationRequest'
+            example:
+              email: student@flowdesk.lab
+              amount: 42.5
+      responses:
+        '200':
+          description: Validation passed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabValidationResponse'
+              example:
+                message: Validation passed
+                email: student@flowdesk.lab
+                amount: 42.5
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  headers:
+    RetryAfter:
+      description: Number of seconds to wait before retrying.
+      schema:
+        type: integer
+        example: 10
+  parameters:
+    XStudentID:
+      name: X-Student-ID
+      in: header
+      required: false
+      description: Student identifier used for didactic request scoping.
+      schema:
+        type: string
+        default: anonymous
+        example: grupo-01
+    XRequestID:
+      name: X-Request-ID
+      in: header
+      required: false
+      description: Request correlation ID for traceability in workflows.
+      schema:
+        type: string
+        default: anonymous
+        example: req-12345
+    EmployeeId:
+      name: employee_id
+      in: path
+      required: true
+      description: Employee identifier.
+      schema:
+        type: string
+        example: EMP001
+    CategoryPath:
+      name: category
+      in: path
+      required: true
+      description: Support category key.
+      schema:
+        type: string
+        enum: [it, hr, finance, facilities, security, other]
+        example: it
+    TicketId:
+      name: ticket_id
+      in: path
+      required: true
+      description: Ticket identifier.
+      schema:
+        type: string
+        example: TK-1001
+    AccessRequestId:
+      name: request_id
+      in: path
+      required: true
+      description: Access request identifier.
+      schema:
+        type: string
+        example: AR-501
+    TicketEmployeeIdFilter:
+      name: employee_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: EMP001
+    TicketCategoryFilter:
+      name: category
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [it, hr, finance, facilities, security, other]
+        example: it
+    TicketPriorityFilter:
+      name: priority
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [low, medium, high, critical]
+        example: critical
+    TicketStatusFilter:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        example: open
+    EventTypeFilter:
+      name: event_type
+      in: query
+      required: false
+      schema:
+        type: string
+        example: ticket_created
+    LabSlowSeconds:
+      name: seconds
+      in: query
+      required: false
+      description: Delay duration in seconds.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 15
+        default: 5
+        example: 3
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HTTPValidationError'
+          example:
+            detail:
+              - loc: [body, amount]
+                msg: Input should be greater than or equal to 0
+                type: greater_than_equal
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: Internal server error
+    NotFoundEmployee:
+      description: Employee not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: Employee not found
+    NotFoundTeam:
+      description: Team not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: 'Team not found for category: unknown'
+    NotFoundTicket:
+      description: Ticket not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: Ticket not found
+    NotFoundAccessRequest:
+      description: Access request not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            detail: Access request not found
+  schemas:
+    RootResponse:
+      type: object
+      properties:
+        service:
+          type: string
+          example: FlowDesk Lab API
+        docs:
+          type: string
+          example: /docs
+        openapi:
+          type: string
+          example: /openapi.json
+        health:
+          type: string
+          example: /health
+      required: [service, docs, openapi, health]
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: flowdesk-lab-api
+        version:
+          type: string
+          example: 1.0.0
+      required: [status, service, version]
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          example: EMP001
+        name:
+          type: string
+          example: Ayla Mercer
+        department:
+          type: string
+          example: Marketing
+        email:
+          type: string
+          format: email
+          example: ayla.mercer@example.com
+        role:
+          type: string
+          example: Analista
+        vip:
+          type: boolean
+          example: false
+      required: [id, name, department, email, role, vip]
+    Team:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [it, hr, finance, facilities, security, other]
+          example: it
+        team_name:
+          type: string
+          example: IT Support
+        email:
+          type: string
+          format: email
+          example: it@example.com
+        queue:
+          type: string
+          example: technical-support
+        sla_default_hours:
+          type: integer
+          example: 4
+      required: [category, team_name, email, queue, sla_default_hours]
+    PriorityRequest:
+      type: object
+      properties:
+        employee_id:
+          type: string
+          example: EMP001
+        category:
+          type: string
+          enum: [it, hr, finance, facilities, security, other]
+          example: it
+        impact:
+          type: string
+          enum: [low, medium, high]
+          example: high
+        urgency:
+          type: string
+          enum: [low, medium, high]
+          example: high
+      required: [employee_id, category, impact, urgency]
+    PriorityResponse:
+      type: object
+      properties:
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          example: critical
+        sla_hours:
+          type: integer
+          example: 1
+        requires_escalation:
+          type: boolean
+          example: true
+        rule:
+          type: string
+          example: high_high_impact_urgency
+      required: [priority, sla_hours, requires_escalation, rule]
+    TicketCreate:
+      type: object
+      properties:
+        employee_id:
+          type: string
+          example: EMP001
+        category:
+          type: string
+          enum: [it, hr, finance, facilities, security, other]
+          example: it
+        impact:
+          type: string
+          enum: [low, medium, high]
+          example: high
+        urgency:
+          type: string
+          enum: [low, medium, high]
+          example: high
+        summary:
+          type: string
+          example: Falha de conectividade no notebook
+        description:
+          type: string
+          example: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+        source:
+          type: string
+          example: n8n
+          default: api
+      required: [employee_id, category, impact, urgency, summary, description]
+    Ticket:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+          example: TK-1001
+        status:
+          type: string
+          example: open
+        employee_id:
+          type: string
+          example: EMP001
+        category:
+          type: string
+          enum: [it, hr, finance, facilities, security, other]
+          example: it
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          example: critical
+        assigned_team:
+          type: string
+          example: IT Support
+        queue:
+          type: string
+          example: technical-support
+        summary:
+          type: string
+          example: Falha de conectividade no notebook
+        description:
+          type: string
+          example: Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.
+        source:
+          type: string
+          example: n8n
+        student_id:
+          type: string
+          example: grupo-01
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:00:00Z'
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: null
+      required:
+        - ticket_id
+        - status
+        - employee_id
+        - category
+        - priority
+        - assigned_team
+        - queue
+        - summary
+        - description
+        - source
+        - student_id
+        - created_at
+        - updated_at
+    AccessRequestCreate:
+      type: object
+      properties:
+        employee_id:
+          type: string
+          example: EMP002
+        resource:
+          type: string
+          example: production-server
+        justification:
+          type: string
+          example: Maintenance window for critical patch deployment
+        risk:
+          type: string
+          enum: [low, medium, high]
+          example: high
+      required: [employee_id, resource, justification, risk]
+    AccessRequestApproval:
+      type: object
+      properties:
+        approved_by:
+          type: string
+          example: professor@fiap.com.br
+        decision:
+          type: string
+          enum: [approved, rejected]
+          example: approved
+        decision_comment:
+          type:
+            - string
+            - 'null'
+          example: Aprovado para demonstração em sala de aula.
+      required: [approved_by, decision]
+    AccessRequest:
+      type: object
+      properties:
+        request_id:
+          type: string
+          example: AR-501
+        employee_id:
+          type: string
+          example: EMP002
+        resource:
+          type: string
+          example: production-server
+        justification:
+          type: string
+          example: Maintenance window for critical patch deployment
+        risk:
+          type: string
+          enum: [low, medium, high]
+          example: high
+        status:
+          type: string
+          example: pending_approval
+        requires_human_approval:
+          type: boolean
+          example: true
+        approved_by:
+          type:
+            - string
+            - 'null'
+          example: null
+        decision:
+          type:
+            - string
+            - 'null'
+          example: null
+        decision_comment:
+          type:
+            - string
+            - 'null'
+          example: null
+        decision_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: null
+        student_id:
+          type: string
+          example: grupo-01
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:00:00Z'
+      required:
+        - request_id
+        - employee_id
+        - resource
+        - justification
+        - risk
+        - status
+        - requires_human_approval
+        - approved_by
+        - decision
+        - decision_comment
+        - decision_at
+        - student_id
+        - created_at
+    Event:
+      type: object
+      properties:
+        event_id:
+          type: string
+          example: EV-A1B2C3D4E5F6
+        event_type:
+          type: string
+          example: ticket_created
+        student_id:
+          type: string
+          example: grupo-01
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-09-11T10:00:00Z'
+        resource_type:
+          type: string
+          example: ticket
+        resource_id:
+          type: string
+          example: TK-1001
+        metadata_json:
+          type: string
+          example: '{"category":"it","priority":"critical"}'
+      required: [event_id, event_type, student_id, timestamp, resource_type, resource_id, metadata_json]
+    LabSlowResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Response after 3 seconds
+        seconds:
+          type: integer
+          example: 3
+      required: [message, seconds]
+    LabRateLimitSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Request accepted
+        student_id:
+          type: string
+          example: grupo-01
+        requests_in_window:
+          type: integer
+          example: 2
+      required: [message, student_id, requests_in_window]
+    LabValidationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: student@flowdesk.lab
+        amount:
+          type: number
+          minimum: 0
+          example: 42.5
+      required: [email, amount]
+    LabValidationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation passed
+        email:
+          type: string
+          format: email
+          example: student@flowdesk.lab
+        amount:
+          type: number
+          example: 42.5
+      required: [message, email, amount]
+    ErrorMessage:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Employee not found
+      required: [detail]
+    RateLimitError:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Too many requests
+        retry_after_seconds:
+          type: integer
+          example: 10
+      required: [detail, retry_after_seconds]
+    ValidationErrorItem:
+      type: object
+      properties:
+        loc:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: integer
+          example: [body, email]
+        msg:
+          type: string
+          example: value is not a valid email address
+        type:
+          type: string
+          example: value_error
+      required: [loc, msg, type]
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationErrorItem'
+      required: [detail]

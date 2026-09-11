@@ -1,0 +1,137 @@
+@base_url = http://localhost:8000
+@student_id = grupo-01
+
+### Root
+GET {{base_url}}/
+X-Student-ID: {{student_id}}
+X-Request-ID: req-root-001
+
+### Health Check
+GET {{base_url}}/health
+X-Student-ID: {{student_id}}
+X-Request-ID: req-health-001
+
+### Get Employee
+GET {{base_url}}/api/v1/employees/EMP001
+X-Student-ID: {{student_id}}
+X-Request-ID: req-employee-001
+
+### Get Employee - Not Found
+GET {{base_url}}/api/v1/employees/EMP999
+X-Student-ID: {{student_id}}
+X-Request-ID: req-employee-404
+
+### Get Team
+GET {{base_url}}/api/v1/teams/it
+X-Student-ID: {{student_id}}
+X-Request-ID: req-team-001
+
+### Check Priority
+POST {{base_url}}/api/v1/priority/check
+Content-Type: application/json
+X-Student-ID: {{student_id}}
+X-Request-ID: req-priority-001
+
+{
+  "employee_id": "EMP001",
+  "category": "it",
+  "impact": "high",
+  "urgency": "high"
+}
+
+### Create Ticket
+POST {{base_url}}/api/v1/tickets
+Content-Type: application/json
+X-Student-ID: {{student_id}}
+X-Request-ID: req-ticket-create-001
+
+{
+  "employee_id": "EMP001",
+  "category": "it",
+  "impact": "high",
+  "urgency": "high",
+  "summary": "Falha de conectividade no notebook",
+  "description": "Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.",
+  "source": "n8n"
+}
+
+### Get Ticket
+GET {{base_url}}/api/v1/tickets/TK-1001
+X-Student-ID: {{student_id}}
+X-Request-ID: req-ticket-get-001
+
+### List Tickets
+GET {{base_url}}/api/v1/tickets?employee_id=EMP001
+X-Student-ID: {{student_id}}
+X-Request-ID: req-ticket-list-001
+
+### Create Access Request
+POST {{base_url}}/api/v1/access-requests
+Content-Type: application/json
+X-Student-ID: {{student_id}}
+X-Request-ID: req-access-create-001
+
+{
+  "employee_id": "EMP002",
+  "resource": "production-server",
+  "justification": "Maintenance window for critical patch deployment",
+  "risk": "high"
+}
+
+### Get Access Request
+GET {{base_url}}/api/v1/access-requests/AR-501
+X-Student-ID: {{student_id}}
+X-Request-ID: req-access-get-001
+
+### Approve Access Request
+POST {{base_url}}/api/v1/access-requests/AR-501/approve
+Content-Type: application/json
+X-Student-ID: {{student_id}}
+X-Request-ID: req-access-approve-001
+
+{
+  "approved_by": "professor@fiap.com.br",
+  "decision": "approved",
+  "decision_comment": "Aprovado para demonstração em sala de aula."
+}
+
+### List Events
+GET {{base_url}}/api/v1/events
+X-Student-ID: {{student_id}}
+X-Request-ID: req-events-001
+
+### List Events - Filtered
+GET {{base_url}}/api/v1/events?event_type=ticket_created
+X-Student-ID: {{student_id}}
+X-Request-ID: req-events-002
+
+### Lab - Slow
+GET {{base_url}}/api/v1/lab/slow?seconds=3
+X-Student-ID: {{student_id}}
+X-Request-ID: req-lab-slow-001
+
+### Lab - Error
+GET {{base_url}}/api/v1/lab/error
+X-Student-ID: {{student_id}}
+X-Request-ID: req-lab-error-001
+
+### Lab - Rate Limit
+GET {{base_url}}/api/v1/lab/rate-limit
+X-Student-ID: {{student_id}}
+X-Request-ID: req-lab-rate-001
+
+### Lab - Not Found
+GET {{base_url}}/api/v1/lab/not-found
+X-Student-ID: {{student_id}}
+X-Request-ID: req-lab-notfound-001
+
+### Lab - Validation Error
+POST {{base_url}}/api/v1/lab/validation
+Content-Type: application/json
+X-Student-ID: {{student_id}}
+X-Request-ID: req-lab-validation-001
+
+{
+  "email": "invalid-email",
+  "amount": -10
+}

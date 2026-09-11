@@ -1,11 +1,11 @@
 # FlowDesk Lab API
 
+## Contexto
+
 API pedagógica para a disciplina FIAP de Tools, Automations and Workflows.
 Representa uma central inteligente de solicitações internas (FlowDesk Lab).
 
-## Contexto
-
-O objetivo é permitir que alunos exploram:
+O objetivo é permitir que alunos explorem:
 - REST APIs (GET/POST)
 - Path parameters, headers, JSON
 - Webhooks, HTTP Request
@@ -18,7 +18,7 @@ O objetivo é permitir que alunos exploram:
 
 ## Arquitetura
 
-```
+```text
 LLM / Agent
     ↓
 Workflow (n8n / Make / Dify)
@@ -38,12 +38,14 @@ Data / Ticket System
 ### Criar venv
 
 **Mac/Linux:**
+
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 ```
 
 **Windows:**
+
 ```bash
 python3.12 -m venv .venv
 .venv\Scripts\activate
@@ -57,6 +59,7 @@ pip install -r requirements.txt
 ```
 
 Para desenvolvimento (com testes):
+
 ```bash
 pip install -r requirements-dev.txt
 ```
@@ -76,6 +79,8 @@ Acesse: http://localhost:8000/docs
 
 Acesse: http://localhost:8000/openapi.json
 
+> Para integrações com Dify, n8n, Make e agentes, valide na instância em execução se o contrato publicado em `/openapi.json` expõe as operações esperadas antes de importar ou automatizar.
+
 ## Testar
 
 ```bash
@@ -93,8 +98,8 @@ docker run -p 8000:8000 flowdesk-lab-api
 
 ## Deploy
 
-- Railway: veja [docs/RAILWAY_DEPLOY.md](docs/RAILWAY_DEPLOY.md)
-- GitHub: veja [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md)
+- Railway: veja [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md)
+- GitHub: veja [GITHUB_SETUP.md](./GITHUB_SETUP.md)
 
 ## API Endpoints
 
@@ -120,7 +125,9 @@ docker run -p 8000:8000 flowdesk-lab-api
 
 ## X-Student-ID
 
-Todos os endpoints suportam o header `X-Student-ID` para isolar registros entre grupos de alunos.
+Os endpoints de negócio e laboratório em `/api/v1/*` aceitam o header `X-Student-ID` para contexto de execução do laboratório.
+Nos fluxos que criam registros, esse valor é persistido em `student_id`.
+Esse header é um mecanismo didático de particionamento de contexto, não autenticação.
 
 ```bash
 curl -H "X-Student-ID: grupo-07" http://localhost:8000/api/v1/tickets
@@ -130,9 +137,12 @@ Se não enviado, o valor padrão é `anonymous`.
 
 ## Exemplos de Requests
 
-Veja a pasta `examples/` para payloads de exemplo.
+Use os exemplos descritos em `API_CONTRACTS.md`, `N8N_LAB.md`, `MAKE_LAB.md` e `DIFY_LAB.md`.
 
-Veja o arquivo `requests.http` para uso com VS Code REST Client.
+## Observação sobre contrato e instância executada
+
+Os contratos desta pasta foram escritos a partir dos handlers e modelos presentes em `api/app/`.
+Antes de uma aula, deploy ou importação como tool, confirme na instância ativa se `/docs` e `/openapi.json` estão refletindo essas operações.
 
 ## Casos Didáticos de Erro
 
@@ -144,11 +154,11 @@ Veja o arquivo `requests.http` para uso com VS Code REST Client.
 | `/api/v1/lab/not-found` | 404 | Not found handling |
 | `/api/v1/lab/validation` | 422 | Validation |
 
-## Documentação
+## Documentação complementar
 
-- [N8N Lab](docs/N8N_LAB.md) - Workflows n8n
-- [Make Lab](docs/MAKE_LAB.md) - Workflows Make
-- [Dify Lab](docs/DIFY_LAB.md) - Integração Dify
-- [Architecture](docs/ARCHITECTURE.md) - Diagrama de arquitetura
-- [API Contracts](docs/API_CONTRACTS.md) - Contratos da API
-- [Classroom Scenarios](docs/CLASSROOM_SCENARIOS.md) - Cenários didáticos
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [API_CONTRACTS.md](./API_CONTRACTS.md)
+- [CLASSROOM_SCENARIOS.md](./CLASSROOM_SCENARIOS.md)
+- [N8N_LAB.md](./N8N_LAB.md)
+- [MAKE_LAB.md](./MAKE_LAB.md)
+- [DIFY_LAB.md](./DIFY_LAB.md)

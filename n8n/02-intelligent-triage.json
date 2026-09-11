@@ -1,0 +1,489 @@
+{
+  "name": "FlowDesk Lab - 02 Intelligent Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "flowdesk-triage",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "triage-webhook-01",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        0
+      ],
+      "webhookId": "flowdesk-triage"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/v1/employees/{{$json.body.employee_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-employee"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "triage-http-employee-01",
+      "name": "Get Employee",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -620,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "triage-assign-01",
+              "name": "prompt_template",
+              "value": "Você é um classificador do FlowDesk Lab. Retorne SOMENTE JSON com category, impact, urgency, summary e description.",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-02",
+              "name": "credentialsId",
+              "value": "YOUR_CREDENTIAL_ID",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-03",
+              "name": "credentialsName",
+              "value": "YOUR_CREDENTIAL_NAME",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "triage-set-llm-01",
+      "name": "LLM Classifier Placeholder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -340,
+        0
+      ],
+      "notes": "Replace this Set node with your AI/LLM node and map a structured JSON output. Placeholder credentials: YOUR_CREDENTIAL_ID / YOUR_CREDENTIAL_NAME.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "triage-assign-04",
+              "name": "category",
+              "value": "it",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-05",
+              "name": "impact",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-06",
+              "name": "urgency",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-07",
+              "name": "summary",
+              "value": "Falha de conectividade no notebook",
+              "type": "string"
+            },
+            {
+              "id": "triage-assign-08",
+              "name": "description",
+              "value": "Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "triage-set-structured-01",
+      "name": "Structured Output Placeholder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -60,
+        0
+      ],
+      "notes": "Replace with a structured output parser, JSON parser, or validation node if preferred.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/priority/check",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-priority"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"category\": $json.category, \"impact\": $json.impact, \"urgency\": $json.urgency }",
+        "options": {}
+      },
+      "id": "triage-http-priority-01",
+      "name": "Priority API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        220,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "it",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equal"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "hr",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equal"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equal"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "facilities",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equal"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "security",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equal"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 5
+        }
+      },
+      "id": "triage-switch-01",
+      "name": "Switch Category",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/v1/teams/{{$node['Structured Output Placeholder'].json.category}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-team"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "triage-http-team-01",
+      "name": "Get Team",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        520,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/tickets",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-triage-ticket"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"category\": $node['Structured Output Placeholder'].json.category, \"impact\": $node['Structured Output Placeholder'].json.impact, \"urgency\": $node['Structured Output Placeholder'].json.urgency, \"summary\": $node['Structured Output Placeholder'].json.summary, \"description\": $node['Structured Output Placeholder'].json.description, \"source\": \"n8n\" }",
+        "options": {}
+      },
+      "id": "triage-http-ticket-01",
+      "name": "Create Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        820,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { classification: $node['Structured Output Placeholder'].json, priority: $node['Priority API'].json, team: $node['Get Team'].json, ticket: $json } }}",
+        "options": {}
+      },
+      "id": "triage-respond-01",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Employee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Employee": {
+      "main": [
+        [
+          {
+            "node": "LLM Classifier Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Classifier Placeholder": {
+      "main": [
+        [
+          {
+            "node": "Structured Output Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Placeholder": {
+      "main": [
+        [
+          {
+            "node": "Priority API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Category": {
+      "main": [
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Team": {
+      "main": [
+        [
+          {
+            "node": "Create Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Ticket": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "workflow-02-version",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "flowdesk-workflow-02",
+  "tags": []
+}

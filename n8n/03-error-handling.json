@@ -1,0 +1,207 @@
+{
+  "name": "FlowDesk Lab - 03 Error Handling",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-manual-01",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/lab/slow?seconds=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-error-slow"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 3000
+        }
+      },
+      "id": "error-http-slow-01",
+      "name": "Call Slow Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -420,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/lab/error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-error-500"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "error-http-500-01",
+      "name": "Call Error Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -420,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/api/v1/lab/rate-limit",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-error-rate-limit"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "error-http-rate-01",
+      "name": "Call Rate Limit Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -420,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-assign-01",
+              "name": "status",
+              "value": "fallback",
+              "type": "string"
+            },
+            {
+              "id": "error-assign-02",
+              "name": "message",
+              "value": "Serviço temporariamente indisponível. Tente novamente em instantes.",
+              "type": "string"
+            },
+            {
+              "id": "error-assign-03",
+              "name": "credentialsId",
+              "value": "YOUR_CREDENTIAL_ID",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "error-set-fallback-01",
+      "name": "Fallback Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        0
+      ],
+      "notes": "Use this node as a common fallback branch after timeout, 500, or 429 handling. Placeholder value included for classroom credential demos.",
+      "notesInFlow": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call Slow Endpoint",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Error Endpoint",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Rate Limit Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Slow Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Error Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Rate Limit Endpoint": {
+      "main": [
+        [
+          {
+            "node": "Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "workflow-03-version",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "flowdesk-workflow-03",
+  "tags": []
+}

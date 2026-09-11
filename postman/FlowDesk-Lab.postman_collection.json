@@ -1,0 +1,635 @@
+{
+  "info": {
+    "name": "FlowDesk Lab API",
+    "description": "Postman collection for the FlowDesk Lab API running locally.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "7fe24f73-c99e-445e-9284-54f53249617b"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-root-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": []
+            },
+            "description": "Returns service metadata and links."
+          }
+        },
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-health-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Health check endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Get Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-employee-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/employees/EMP001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "employees", "EMP001"]
+            }
+          }
+        },
+        {
+          "name": "Get Employee - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-employee-404" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/employees/EMP999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "employees", "EMP999"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "Get Team",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-team-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/it",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "it"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Priority",
+      "item": [
+        {
+          "name": "Check Priority",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-priority-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/priority/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "priority", "check"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Create Ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-ticket-create-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP001\",\n  \"category\": \"it\",\n  \"impact\": \"high\",\n  \"urgency\": \"high\",\n  \"summary\": \"Falha de conectividade no notebook\",\n  \"description\": \"Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.\",\n  \"source\": \"n8n\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Get Ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-ticket-get-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/TK-1001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets", "TK-1001"]
+            }
+          }
+        },
+        {
+          "name": "List Tickets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-ticket-list-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets?employee_id=EMP001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tickets"],
+              "query": [
+                { "key": "employee_id", "value": "EMP001" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Access Requests",
+      "item": [
+        {
+          "name": "Create Access Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-access-create-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"EMP002\",\n  \"resource\": \"production-server\",\n  \"justification\": \"Maintenance window for critical patch deployment\",\n  \"risk\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests"]
+            }
+          }
+        },
+        {
+          "name": "Get Access Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-access-get-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests/AR-501",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests", "AR-501"]
+            }
+          }
+        },
+        {
+          "name": "Approve Access Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-access-approve-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved_by\": \"professor@fiap.com.br\",\n  \"decision\": \"approved\",\n  \"decision_comment\": \"Aprovado para demonstração em sala de aula.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/access-requests/AR-501/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "access-requests", "AR-501", "approve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List Events",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-events-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/events",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "events"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lab - Failure Scenarios",
+      "item": [
+        {
+          "name": "Lab - Slow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-lab-slow-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/slow?seconds=3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "slow"],
+              "query": [
+                { "key": "seconds", "value": "3" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lab - Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 500\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-lab-error-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/error",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "error"]
+            }
+          }
+        },
+        {
+          "name": "Lab - Rate Limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 or 429\", function () {",
+                  "    pm.expect([200, 429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-lab-rate-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/rate-limit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "rate-limit"]
+            }
+          }
+        },
+        {
+          "name": "Lab - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-lab-notfound-001" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/not-found",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "not-found"]
+            }
+          }
+        },
+        {
+          "name": "Lab - Validation Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Student-ID", "value": "{{student_id}}" },
+              { "key": "X-Request-ID", "value": "postman-lab-validation-001" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email\",\n  \"amount\": -10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lab/validation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lab", "validation"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "student_id",
+      "value": "grupo-01"
+    }
+  ]
+}

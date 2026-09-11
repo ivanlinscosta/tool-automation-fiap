@@ -1,0 +1,336 @@
+{
+  "name": "FlowDesk Lab - 04 Human in the Loop",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "flowdesk-access-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "hitl-webhook-01",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        0
+      ],
+      "webhookId": "flowdesk-access-request"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/v1/employees/{{$json.body.employee_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-hitl-employee"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "hitl-http-employee-01",
+      "name": "Get Employee",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -620,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "hitl-assign-01",
+              "name": "risk",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "hitl-assign-02",
+              "name": "justification",
+              "value": "Maintenance window for critical patch deployment",
+              "type": "string"
+            },
+            {
+              "id": "hitl-assign-03",
+              "name": "credentialsId",
+              "value": "YOUR_CREDENTIAL_ID",
+              "type": "string"
+            },
+            {
+              "id": "hitl-assign-04",
+              "name": "credentialsName",
+              "value": "YOUR_CREDENTIAL_NAME",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "hitl-set-risk-01",
+      "name": "Risk Classifier Placeholder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -340,
+        0
+      ],
+      "notes": "Replace this Set node with a real LLM node if available. Placeholder credentials: YOUR_CREDENTIAL_ID / YOUR_CREDENTIAL_NAME.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/access-requests",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-hitl-create"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"employee_id\": $node['Webhook'].json.body.employee_id, \"resource\": $node['Webhook'].json.body.resource, \"justification\": $json.justification, \"risk\": $json.risk }",
+        "options": {}
+      },
+      "id": "hitl-http-access-create-01",
+      "name": "Create Access Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -40,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.requires_human_approval }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "hitl-if-01",
+      "name": "IF Requires Approval",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "id": "hitl-wait-01",
+      "name": "Wait for Human Review",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/v1/access-requests/{{$node['Create Access Request'].json.request_id}}/approve",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Student-ID",
+              "value": "grupo-01"
+            },
+            {
+              "name": "X-Request-ID",
+              "value": "n8n-hitl-approve"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"approved_by\": \"professor@fiap.com.br\", \"decision\": \"approved\", \"decision_comment\": \"Approved in classroom simulation after human review.\" }",
+        "options": {}
+      },
+      "id": "hitl-http-access-approve-01",
+      "name": "Approve Access Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        860,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'auto-approved', request: $json } }}",
+        "options": {}
+      },
+      "id": "hitl-respond-auto-01",
+      "name": "Respond Auto-approved",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { employee: $node['Get Employee'].json, risk_assessment: $node['Risk Classifier Placeholder'].json, access_request: $node['Create Access Request'].json, final_decision: $json } }}",
+        "options": {}
+      },
+      "id": "hitl-respond-final-01",
+      "name": "Respond Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        -100
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Employee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Employee": {
+      "main": [
+        [
+          {
+            "node": "Risk Classifier Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risk Classifier Placeholder": {
+      "main": [
+        [
+          {
+            "node": "Create Access Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Access Request": {
+      "main": [
+        [
+          {
+            "node": "IF Requires Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Requires Approval": {
+      "main": [
+        [
+          {
+            "node": "Wait for Human Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Auto-approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Human Review": {
+      "main": [
+        [
+          {
+            "node": "Approve Access Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve Access Request": {
+      "main": [
+        [
+          {
+            "node": "Respond Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "workflow-04-version",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "flowdesk-workflow-04",
+  "tags": []
+}

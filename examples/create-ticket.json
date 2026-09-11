@@ -1,0 +1,9 @@
+{
+  "employee_id": "EMP001",
+  "category": "it",
+  "impact": "high",
+  "urgency": "high",
+  "summary": "Falha de conectividade no notebook",
+  "description": "Notebook não conecta ao Wi-Fi desde ontem. Funcionário tem reunião importante em 1 hora.",
+  "source": "n8n"
+}
