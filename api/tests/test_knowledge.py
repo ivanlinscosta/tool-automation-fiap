@@ -3,7 +3,7 @@ def test_list_knowledge_articles(client, make_headers):
 
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 30
+    assert len(data) == 50
     assert all("Conteúdo fictício para fins didáticos." in item["content"] for item in data)
 
 
