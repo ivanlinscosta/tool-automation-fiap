@@ -1,0 +1,343 @@
+# Quantum Commerce API — requests.http
+# Todos os requests assumem a API rodando em http://localhost:8000
+# Header X-Lab-Group: identifica o grupo de laboratório (padrão: anonymous)
+
+@baseUrl = http://localhost:8000
+@labGroup = grupo-01
+
+### Root
+GET {{baseUrl}}/
+X-Lab-Group: {{labGroup}}
+
+### Health (Railway)
+GET {{baseUrl}}/health
+
+### Health (API v1)
+GET {{baseUrl}}/api/v1/health
+
+### Meta (versão + contagens seed)
+GET {{baseUrl}}/api/v1/meta
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Customers
+### ------------------------------------------------------------------
+
+### Search customers (name ou email)
+GET {{baseUrl}}/api/v1/customers/search?name=Ana
+X-Lab-Group: {{labGroup}}
+
+### Customer by id
+GET {{baseUrl}}/api/v1/customers/CUS-1001
+X-Lab-Group: {{labGroup}}
+
+### Customer context (segmento, pedidos abertos, etc.)
+GET {{baseUrl}}/api/v1/customers/CUS-1001/context
+X-Lab-Group: {{labGroup}}
+
+### Customer orders (filtro por status opcional)
+GET {{baseUrl}}/api/v1/customers/CUS-1001/orders?limit=5
+X-Lab-Group: {{labGroup}}
+
+### Customer recommendation context
+GET {{baseUrl}}/api/v1/customers/CUS-1001/recommendation-context
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Catalog / Products
+### ------------------------------------------------------------------
+
+### Product by SKU
+GET {{baseUrl}}/api/v1/products/QTM-NBK-00123
+X-Lab-Group: {{labGroup}}
+
+### Product search
+GET {{baseUrl}}/api/v1/products/search?category=electronics&brand=QuantumTech
+X-Lab-Group: {{labGroup}}
+
+### Catalog stats
+GET {{baseUrl}}/api/v1/catalog/stats
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Inventory
+### ------------------------------------------------------------------
+
+### Inventory by SKU (total + warehouses)
+GET {{baseUrl}}/api/v1/inventory/QTM-NBK-00123
+X-Lab-Group: {{labGroup}}
+
+### Availability by postal code
+GET {{baseUrl}}/api/v1/inventory/QTM-NBK-00123/availability?postal_code=01310-100
+X-Lab-Group: {{labGroup}}
+
+### Out of stock (QTM-NBK-00150 não possui linhas de estoque)
+GET {{baseUrl}}/api/v1/inventory/QTM-NBK-00150/availability?postal_code=01310-100
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Orders / Logistics
+### ------------------------------------------------------------------
+
+### Order by id
+GET {{baseUrl}}/api/v1/orders/ORD-2026-10001
+X-Lab-Group: {{labGroup}}
+
+### Order shipment
+GET {{baseUrl}}/api/v1/orders/ORD-2026-10001/shipment
+X-Lab-Group: {{labGroup}}
+
+### Shipment by id
+GET {{baseUrl}}/api/v1/shipments/SHP-87421
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Policies
+### ------------------------------------------------------------------
+
+### List policies (filtros category/country opcionais)
+GET {{baseUrl}}/api/v1/policies?category=returns
+X-Lab-Group: {{labGroup}}
+
+### Search policies
+GET {{baseUrl}}/api/v1/policies/search?q=devolução
+X-Lab-Group: {{labGroup}}
+
+### Policy by id
+GET {{baseUrl}}/api/v1/policies/POL-RETURN-001
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Returns
+### ------------------------------------------------------------------
+
+### Check return eligibility (dentro do prazo)
+POST {{baseUrl}}/api/v1/returns/check-eligibility
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "order_id": "ORD-2026-10005",
+  "sku": "QTM-AUD-01023"
+}
+
+### Check return eligibility (fora do prazo)
+POST {{baseUrl}}/api/v1/returns/check-eligibility
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "order_id": "ORD-2026-10007",
+  "sku": "QTM-BED-01089"
+}
+
+### Create return (idempotente com Idempotency-Key)
+POST {{baseUrl}}/api/v1/returns
+X-Lab-Group: {{labGroup}}
+Idempotency-Key: ret-{{$guid}}
+Content-Type: application/json
+
+{
+  "customer_id": "CUS-1001",
+  "order_id": "ORD-2026-10005",
+  "sku": "QTM-AUD-01023",
+  "reason": "Produto com defeito"
+}
+
+### Return by id
+GET {{baseUrl}}/api/v1/returns/RET-90001
+X-Lab-Group: {{labGroup}}
+
+### Customer returns
+GET {{baseUrl}}/api/v1/customers/CUS-1001/returns
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Support
+### ------------------------------------------------------------------
+
+### Priority check
+POST {{baseUrl}}/api/v1/support/priority/check
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "category": "delivery",
+  "impact": "high",
+  "urgency": "high"
+}
+
+### Create support case (idempotente)
+POST {{baseUrl}}/api/v1/support/cases
+X-Lab-Group: {{labGroup}}
+Idempotency-Key: case-{{$guid}}
+Content-Type: application/json
+
+{
+  "customer_id": "CUS-1001",
+  "category": "delivery",
+  "summary": "Atraso na entrega",
+  "description": "Pedido ORD-2026-10001 não chegou na data estimada."
+}
+
+### Support case by id
+GET {{baseUrl}}/api/v1/support/cases/CASE-2026-1001
+X-Lab-Group: {{labGroup}}
+
+### Customer support cases
+GET {{baseUrl}}/api/v1/customers/CUS-1001/support-cases
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Approvals (Human-in-the-Loop)
+### ------------------------------------------------------------------
+
+### Create approval
+POST {{baseUrl}}/api/v1/approvals
+X-Lab-Group: {{labGroup}}
+Idempotency-Key: apr-{{$guid}}
+Content-Type: application/json
+
+{
+  "type": "refund",
+  "reference_id": "ORD-2026-10001",
+  "requested_by": "CUS-1001",
+  "amount": 7899.80,
+  "reason": "Reembolso total do pedido"
+}
+
+### Approval decision
+POST {{baseUrl}}/api/v1/approvals/APR-1011/decision
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "decision": "approved",
+  "comment": "Aprovado pelo supervisor"
+}
+
+### Approval by id
+GET {{baseUrl}}/api/v1/approvals/APR-1011
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Refunds
+### ------------------------------------------------------------------
+
+### Refund com aprovação (acima do threshold R$500,00)
+POST {{baseUrl}}/api/v1/refunds
+X-Lab-Group: {{labGroup}}
+Idempotency-Key: ref-{{$guid}}
+Content-Type: application/json
+
+{
+  "order_id": "ORD-2026-10001",
+  "amount": 7899.80,
+  "reason": "Reembolso total",
+  "approval_id": "APR-1011"
+}
+
+### Refund sem aprovação -> 400 (acima do threshold)
+POST {{baseUrl}}/api/v1/refunds
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "order_id": "ORD-2026-10001",
+  "amount": 7899.80,
+  "reason": "Reembolso total"
+}
+
+### Refund baixo valor (sem aprovação necessária)
+POST {{baseUrl}}/api/v1/refunds
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "order_id": "ORD-2026-10005",
+  "amount": 150.00,
+  "reason": "Reembolso parcial"
+}
+
+### Refund by id
+GET {{baseUrl}}/api/v1/refunds/REF-10007
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Promotions
+### ------------------------------------------------------------------
+
+### Active promotions (filtro country opcional)
+GET {{baseUrl}}/api/v1/promotions?country=BR
+X-Lab-Group: {{labGroup}}
+
+### Eligible promotions
+GET {{baseUrl}}/api/v1/promotions/eligible?customer_id=CUS-1001&sku=QTM-NBK-00123
+X-Lab-Group: {{labGroup}}
+
+### Promotion by id
+GET {{baseUrl}}/api/v1/promotions/PROMO-101
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Interactions
+### ------------------------------------------------------------------
+
+### Create interaction
+POST {{baseUrl}}/api/v1/interactions
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "customer_id": "CUS-1001",
+  "channel": "chat",
+  "message": "Olá, quero devolver um produto",
+  "response": "Claro, vou verificar a elegibilidade",
+  "source": "n8n"
+}
+
+### List interactions
+GET {{baseUrl}}/api/v1/interactions?customer_id=CUS-1001&limit=10
+X-Lab-Group: {{labGroup}}
+
+### Interaction by id
+GET {{baseUrl}}/api/v1/interactions/INT-10001
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Events (auditoria)
+### ------------------------------------------------------------------
+
+### List audit events
+GET {{baseUrl}}/api/v1/events?type=customer_lookup&limit=10
+X-Lab-Group: {{labGroup}}
+
+### ------------------------------------------------------------------
+### Lab (didáticos)
+### ------------------------------------------------------------------
+
+### Slow response (seconds=1..15)
+GET {{baseUrl}}/api/v1/lab/slow?seconds=2
+X-Lab-Group: {{labGroup}}
+
+### Simulated 500
+GET {{baseUrl}}/api/v1/lab/error
+X-Lab-Group: {{labGroup}}
+
+### Rate limit (3 por janela de 60s por lab_group -> 429)
+GET {{baseUrl}}/api/v1/lab/rate-limit
+X-Lab-Group: {{labGroup}}
+
+### Simulated 404
+GET {{baseUrl}}/api/v1/lab/not-found
+X-Lab-Group: {{labGroup}}
+
+### Validation demo (email inválido -> 422)
+POST {{baseUrl}}/api/v1/lab/validation
+X-Lab-Group: {{labGroup}}
+Content-Type: application/json
+
+{
+  "email": "nao-e-um-email",
+  "amount": -5
+}

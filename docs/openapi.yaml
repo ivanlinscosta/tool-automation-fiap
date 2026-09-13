@@ -1,0 +1,2599 @@
+openapi: 3.1.0
+info:
+  title: Quantum Commerce API
+  description: API oficial do case fictício Quantum Commerce — disciplina Tools, Automations and Workflows (FIAP). Backend
+    determinístico para agentes n8n, Dify, Power Automate e Python. Sem LLM no backend.
+  version: 2.0.0
+paths:
+  /:
+    get:
+      tags:
+      - Root
+      summary: Root
+      operationId: root
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Root
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Railway Health Check
+      operationId: railway_health_check
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Railway Health Check
+  /api/v1/health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Health Check
+  /api/v1/customers/search:
+    get:
+      tags:
+      - Customers
+      summary: Search Customers
+      operationId: search_customers
+      parameters:
+      - name: email
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+      - name: name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+                title: Response Search Customers
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}:
+    get:
+      tags:
+      - Customers
+      summary: Get Customer By Id
+      operationId: get_customer_by_id
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}/context:
+    get:
+      tags:
+      - Customers
+      summary: Get Customer Context
+      operationId: get_customer_context
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerContextResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}/orders:
+    get:
+      tags:
+      - Customers
+      summary: Get Customer Orders
+      operationId: get_customer_orders
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+                title: Response Get Customer Orders
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}/recommendation-context:
+    get:
+      tags:
+      - Customers
+      summary: Get Customer Recommendation Context
+      operationId: get_customer_recommendation_context
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationContextResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/search:
+    get:
+      tags:
+      - Products
+      summary: Search Products Route
+      operationId: search_products
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Q
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+      - name: brand
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+      - name: min_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Min Price
+      - name: max_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Max Price
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response Search Products
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/catalog/stats:
+    get:
+      tags:
+      - Products
+      summary: Get Catalog Stats Route
+      operationId: get_catalog_stats
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogStatsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/{sku}:
+    get:
+      tags:
+      - Products
+      summary: Get Product Route
+      operationId: get_product
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/inventory/{sku}:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Route
+      operationId: get_inventory
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/inventory/{sku}/availability:
+    get:
+      tags:
+      - Inventory
+      summary: Get Inventory Availability Route
+      operationId: get_inventory_availability
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      - name: postal_code
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Postal Code
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/orders/{order_id}:
+    get:
+      tags:
+      - Orders
+      summary: Get Order By Id
+      operationId: get_order_by_id
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/orders/{order_id}/shipment:
+    get:
+      tags:
+      - Orders
+      summary: Get Order Shipment
+      operationId: get_order_shipment
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentResponse'
+        '404':
+          description: Order or shipment not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shipments/{shipment_id}:
+    get:
+      tags:
+      - Logistics
+      summary: Get Shipment By Id
+      operationId: get_shipment_by_id
+      parameters:
+      - name: shipment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shipment Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentResponse'
+        '404':
+          description: Shipment not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/policies:
+    get:
+      tags:
+      - Policies
+      summary: List Policies Route
+      operationId: list_policies
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+      - name: country
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Policies
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/policies/search:
+    get:
+      tags:
+      - Policies
+      summary: Search Policies Route
+      operationId: search_policies
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Q
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Search Policies
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/policies/{policy_id}:
+    get:
+      tags:
+      - Policies
+      summary: Get Policy Route
+      operationId: get_policy
+      parameters:
+      - name: policy_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Policy Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Policy
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/returns/check-eligibility:
+    post:
+      tags:
+      - Returns
+      summary: Check Return Eligibility
+      operationId: check_return_eligibility
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnEligibilityRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnEligibilityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/returns:
+    post:
+      tags:
+      - Returns
+      summary: Create Return
+      operationId: create_return
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReturnResponse'
+        '200':
+          description: Idempotent replay
+        '404':
+          description: Order not found
+        '409':
+          description: Idempotency key conflict
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/returns/{return_id}:
+    get:
+      tags:
+      - Returns
+      summary: Get Return By Id
+      operationId: get_return_by_id
+      parameters:
+      - name: return_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Return Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Return By Id
+        '404':
+          description: Return not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}/returns:
+    get:
+      tags:
+      - Returns
+      summary: List Customer Returns
+      operationId: list_customer_returns
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Customer Returns
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/support/cases:
+    post:
+      tags:
+      - Support
+      summary: Create Support Case
+      operationId: create_support_case
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportCaseCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportCaseResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/support/cases/{case_id}:
+    get:
+      tags:
+      - Support
+      summary: Get Support Case
+      operationId: get_support_case
+      parameters:
+      - name: case_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Case Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportCaseDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customers/{customer_id}/support-cases:
+    get:
+      tags:
+      - Support
+      summary: List Customer Support Cases
+      operationId: list_customer_support_cases
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportCaseDetail'
+                title: Response List Customer Support Cases
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/support/priority/check:
+    post:
+      tags:
+      - Support
+      summary: Check Support Priority
+      operationId: check_support_priority
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriorityCheckRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Check Support Priority
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/approvals:
+    post:
+      tags:
+      - Approvals
+      summary: Create Approval
+      operationId: create_approval
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/approvals/{approval_id}:
+    get:
+      tags:
+      - Approvals
+      summary: Get Approval
+      operationId: get_approval
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Approval Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/approvals/{approval_id}/decision:
+    post:
+      tags:
+      - Approvals
+      summary: Create Approval Decision
+      operationId: create_approval_decision
+      parameters:
+      - name: approval_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Approval Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalDecision'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/refunds:
+    post:
+      tags:
+      - Refunds
+      summary: Create Refund
+      operationId: create_refund
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/refunds/{refund_id}:
+    get:
+      tags:
+      - Refunds
+      summary: Get Refund
+      operationId: get_refund
+      parameters:
+      - name: refund_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Refund Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Refund
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/promotions:
+    get:
+      tags:
+      - Promotions
+      summary: List Active Promotions
+      operationId: list_active_promotions
+      parameters:
+      - name: country
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PromotionResponse'
+                title: Response List Active Promotions
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/promotions/eligible:
+    get:
+      tags:
+      - Promotions
+      summary: Get Eligible Promotions
+      operationId: get_eligible_promotions
+      parameters:
+      - name: customer_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+      - name: sku
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Eligible Promotions
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/promotions/{promotion_id}:
+    get:
+      tags:
+      - Promotions
+      summary: Get Promotion By Id
+      operationId: get_promotion_by_id
+      parameters:
+      - name: promotion_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Promotion Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/interactions:
+    post:
+      tags:
+      - Interactions
+      summary: Create Interaction Route
+      operationId: create_interaction
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InteractionCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InteractionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - Interactions
+      summary: List Interactions Route
+      operationId: list_interactions
+      parameters:
+      - name: customer_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 500
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InteractionDetail'
+                title: Response List Interactions
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/interactions/{interaction_id}:
+    get:
+      tags:
+      - Interactions
+      summary: Get Interaction Route
+      operationId: get_interaction
+      parameters:
+      - name: interaction_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Interaction Id
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InteractionDetail'
+        '404':
+          description: Interaction not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/events:
+    get:
+      tags:
+      - Events
+      summary: List Events Route
+      operationId: list_events
+      parameters:
+      - name: customer_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+      - name: order_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Id
+      - name: type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Type
+      - name: source
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 500
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventResponse'
+                title: Response List Events
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/meta:
+    get:
+      tags:
+      - Meta
+      summary: Get Meta
+      operationId: get_meta
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Meta
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lab/slow:
+    get:
+      tags:
+      - Lab
+      summary: Lab Slow
+      operationId: lab_slow
+      parameters:
+      - name: seconds
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 15
+          minimum: 1
+          default: 5
+          title: Seconds
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      - name: X-Request-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Request-Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Lab Slow
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lab/error:
+    get:
+      tags:
+      - Lab
+      summary: Lab Error
+      operationId: lab_error
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      - name: X-Request-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Request-Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Lab Error
+        '500':
+          description: Simulated internal server error
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lab/rate-limit:
+    get:
+      tags:
+      - Lab
+      summary: Lab Rate Limit
+      operationId: lab_rate_limit
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      - name: X-Request-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Request-Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Lab Rate Limit
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lab/not-found:
+    get:
+      tags:
+      - Lab
+      summary: Lab Not Found
+      operationId: lab_not_found
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      - name: X-Request-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Request-Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Lab Not Found
+        '404':
+          description: Resource not found (simulated)
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lab/validation:
+    post:
+      tags:
+      - Lab
+      summary: Lab Validation
+      operationId: lab_validation
+      parameters:
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Lab-Group
+      - name: X-Request-ID
+        in: header
+        required: false
+        schema:
+          type: string
+          default: anonymous
+          title: X-Request-Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationPayload'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Lab Validation
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ApprovalCreate:
+      properties:
+        type:
+          type: string
+          title: Type
+        reference_id:
+          type: string
+          title: Reference Id
+        requested_by:
+          type: string
+          title: Requested By
+          default: ai-agent
+        amount:
+          type: number
+          title: Amount
+          default: 0
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - type
+      - reference_id
+      - reason
+      title: ApprovalCreate
+    ApprovalDecision:
+      properties:
+        decision:
+          type: string
+          title: Decision
+          description: approved or rejected
+        comment:
+          type: string
+          title: Comment
+          default: ''
+      type: object
+      required:
+      - decision
+      title: ApprovalDecision
+    ApprovalDetail:
+      properties:
+        approval_id:
+          type: string
+          title: Approval Id
+        type:
+          type: string
+          title: Type
+        reference_id:
+          type: string
+          title: Reference Id
+        requested_by:
+          type: string
+          title: Requested By
+        amount:
+          type: number
+          title: Amount
+        reason:
+          type: string
+          title: Reason
+        status:
+          type: string
+          title: Status
+        decision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Decision
+        comment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comment
+        decided_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Decided By
+        lab_group:
+          type: string
+          title: Lab Group
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        decided_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Decided At
+      type: object
+      required:
+      - approval_id
+      - type
+      - reference_id
+      - requested_by
+      - amount
+      - reason
+      - status
+      - lab_group
+      - created_at
+      title: ApprovalDetail
+    ApprovalResponse:
+      properties:
+        approval_id:
+          type: string
+          title: Approval Id
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - approval_id
+      - status
+      title: ApprovalResponse
+    AvailabilityResponse:
+      properties:
+        sku:
+          type: string
+          title: Sku
+        available:
+          type: boolean
+          title: Available
+        quantity:
+          type: integer
+          title: Quantity
+        estimated_delivery_days:
+          type: integer
+          title: Estimated Delivery Days
+      type: object
+      required:
+      - sku
+      - available
+      - quantity
+      - estimated_delivery_days
+      title: AvailabilityResponse
+    CatalogStatsResponse:
+      properties:
+        total_skus:
+          type: integer
+          title: Total Skus
+        active_skus:
+          type: integer
+          title: Active Skus
+        categories:
+          type: integer
+          title: Categories
+        countries:
+          type: integer
+          title: Countries
+      type: object
+      required:
+      - total_skus
+      - active_skus
+      - categories
+      - countries
+      title: CatalogStatsResponse
+    CustomerContextResponse:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+        segment:
+          type: string
+          title: Segment
+        loyalty_tier:
+          type: string
+          title: Loyalty Tier
+        total_orders:
+          type: integer
+          title: Total Orders
+        open_orders:
+          type: integer
+          title: Open Orders
+        open_support_cases:
+          type: integer
+          title: Open Support Cases
+        returns_last_12_months:
+          type: integer
+          title: Returns Last 12 Months
+        lifetime_value:
+          type: number
+          title: Lifetime Value
+      type: object
+      required:
+      - customer_id
+      - segment
+      - loyalty_tier
+      - total_orders
+      - open_orders
+      - open_support_cases
+      - returns_last_12_months
+      - lifetime_value
+      title: CustomerContextResponse
+    CustomerResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        email:
+          type: string
+          title: Email
+        country:
+          type: string
+          title: Country
+        city:
+          type: string
+          title: City
+        segment:
+          type: string
+          title: Segment
+        loyalty_tier:
+          type: string
+          title: Loyalty Tier
+        customer_since:
+          type: string
+          format: date
+          title: Customer Since
+        lifetime_value:
+          type: number
+          title: Lifetime Value
+        preferred_channel:
+          type: string
+          title: Preferred Channel
+      type: object
+      required:
+      - id
+      - name
+      - email
+      - country
+      - city
+      - segment
+      - loyalty_tier
+      - customer_since
+      - lifetime_value
+      - preferred_channel
+      title: CustomerResponse
+    EventResponse:
+      properties:
+        event_id:
+          type: string
+          title: Event Id
+          description: Unique event identifier.
+        event_type:
+          type: string
+          title: Event Type
+          description: Event classification or verb describing the action.
+        lab_group:
+          type: string
+          title: Lab Group
+          description: Lab group identifier captured from the X-Lab-Group header.
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+          description: Customer identifier related to the event, when applicable.
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+          description: UTC timestamp when the event was recorded.
+        resource_type:
+          type: string
+          title: Resource Type
+          description: Domain resource type related to the event.
+        resource_id:
+          type: string
+          title: Resource Id
+          description: Domain resource identifier related to the event.
+        metadata_json:
+          type: string
+          title: Metadata Json
+          description: Serialized JSON metadata payload for audit details.
+      type: object
+      required:
+      - event_id
+      - event_type
+      - lab_group
+      - timestamp
+      - resource_type
+      - resource_id
+      - metadata_json
+      title: EventResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InteractionCreate:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+        channel:
+          type: string
+          title: Channel
+        message:
+          type: string
+          title: Message
+        response:
+          type: string
+          title: Response
+        source:
+          type: string
+          title: Source
+          default: ai-agent
+      type: object
+      required:
+      - customer_id
+      - channel
+      - message
+      - response
+      title: InteractionCreate
+    InteractionDetail:
+      properties:
+        interaction_id:
+          type: string
+          title: Interaction Id
+        customer_id:
+          type: string
+          title: Customer Id
+        channel:
+          type: string
+          title: Channel
+        message:
+          type: string
+          title: Message
+        response:
+          type: string
+          title: Response
+        source:
+          type: string
+          title: Source
+        lab_group:
+          type: string
+          title: Lab Group
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - interaction_id
+      - customer_id
+      - channel
+      - message
+      - response
+      - source
+      - lab_group
+      - created_at
+      title: InteractionDetail
+    InteractionResponse:
+      properties:
+        interaction_id:
+          type: string
+          title: Interaction Id
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - interaction_id
+      - created_at
+      title: InteractionResponse
+    InventoryResponse:
+      properties:
+        sku:
+          type: string
+          title: Sku
+        total_available:
+          type: integer
+          title: Total Available
+        warehouses:
+          items:
+            $ref: '#/components/schemas/WarehouseStock'
+          type: array
+          title: Warehouses
+      type: object
+      required:
+      - sku
+      - total_available
+      - warehouses
+      title: InventoryResponse
+    OrderItemResponse:
+      properties:
+        sku:
+          type: string
+          title: Sku
+        name:
+          type: string
+          title: Name
+        quantity:
+          type: integer
+          title: Quantity
+        unit_price:
+          type: number
+          title: Unit Price
+      type: object
+      required:
+      - sku
+      - name
+      - quantity
+      - unit_price
+      title: OrderItemResponse
+    OrderResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        customer_id:
+          type: string
+          title: Customer Id
+        status:
+          type: string
+          title: Status
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        total:
+          type: number
+          title: Total
+        currency:
+          type: string
+          title: Currency
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItemResponse'
+          type: array
+          title: Items
+      type: object
+      required:
+      - id
+      - customer_id
+      - status
+      - created_at
+      - total
+      - currency
+      - items
+      title: OrderResponse
+    PriorityCheckRequest:
+      properties:
+        category:
+          type: string
+          title: Category
+        impact:
+          type: string
+          title: Impact
+        urgency:
+          type: string
+          title: Urgency
+      type: object
+      required:
+      - category
+      - impact
+      - urgency
+      title: PriorityCheckRequest
+    ProductResponse:
+      properties:
+        sku:
+          type: string
+          title: Sku
+        name:
+          type: string
+          title: Name
+        category:
+          type: string
+          title: Category
+        subcategory:
+          type: string
+          title: Subcategory
+        brand:
+          type: string
+          title: Brand
+        price:
+          type: number
+          title: Price
+        currency:
+          type: string
+          title: Currency
+        active:
+          type: boolean
+          title: Active
+        rating:
+          type: number
+          title: Rating
+      type: object
+      required:
+      - sku
+      - name
+      - category
+      - subcategory
+      - brand
+      - price
+      - currency
+      - active
+      - rating
+      title: ProductResponse
+    PromotionResponse:
+      properties:
+        promotion_id:
+          type: string
+          title: Promotion Id
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        discount_pct:
+          type: number
+          title: Discount Pct
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+        min_price:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Min Price
+        active:
+          type: boolean
+          title: Active
+        starts_at:
+          type: string
+          format: date
+          title: Starts At
+        ends_at:
+          type: string
+          format: date
+          title: Ends At
+      type: object
+      required:
+      - promotion_id
+      - name
+      - description
+      - discount_pct
+      - category
+      - brand
+      - country
+      - min_price
+      - active
+      - starts_at
+      - ends_at
+      title: PromotionResponse
+    RecommendationContextResponse:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+        recent_categories:
+          items:
+            type: string
+          type: array
+          title: Recent Categories
+        recent_products:
+          items:
+            type: string
+          type: array
+          title: Recent Products
+        preferred_brands:
+          items:
+            type: string
+          type: array
+          title: Preferred Brands
+        average_order_value:
+          type: number
+          title: Average Order Value
+        price_sensitivity:
+          type: string
+          title: Price Sensitivity
+          description: low, medium or high
+      type: object
+      required:
+      - customer_id
+      - recent_categories
+      - recent_products
+      - preferred_brands
+      - average_order_value
+      - price_sensitivity
+      title: RecommendationContextResponse
+    RefundCreate:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+        amount:
+          type: number
+          title: Amount
+        reason:
+          type: string
+          title: Reason
+        approval_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Id
+      type: object
+      required:
+      - order_id
+      - amount
+      - reason
+      title: RefundCreate
+    RefundResponse:
+      properties:
+        refund_id:
+          type: string
+          title: Refund Id
+        status:
+          type: string
+          title: Status
+        amount:
+          type: number
+          title: Amount
+      type: object
+      required:
+      - refund_id
+      - status
+      - amount
+      title: RefundResponse
+    ReturnCreate:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+        order_id:
+          type: string
+          title: Order Id
+        sku:
+          type: string
+          title: Sku
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - customer_id
+      - order_id
+      - sku
+      - reason
+      title: ReturnCreate
+    ReturnEligibilityRequest:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+        sku:
+          type: string
+          title: Sku
+      type: object
+      required:
+      - order_id
+      - sku
+      title: ReturnEligibilityRequest
+    ReturnEligibilityResponse:
+      properties:
+        eligible:
+          type: boolean
+          title: Eligible
+        reason:
+          type: string
+          title: Reason
+        days_since_delivery:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Days Since Delivery
+        return_window_days:
+          type: integer
+          title: Return Window Days
+        policy_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Policy Id
+      type: object
+      required:
+      - eligible
+      - reason
+      - return_window_days
+      title: ReturnEligibilityResponse
+    ReturnResponse:
+      properties:
+        return_id:
+          type: string
+          title: Return Id
+        status:
+          type: string
+          title: Status
+        protocol:
+          type: string
+          title: Protocol
+      type: object
+      required:
+      - return_id
+      - status
+      - protocol
+      title: ReturnResponse
+    ShipmentEvent:
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+        location:
+          type: string
+          title: Location
+        status:
+          type: string
+          title: Status
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - timestamp
+      - location
+      - status
+      - description
+      title: ShipmentEvent
+    ShipmentResponse:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+        shipment_id:
+          type: string
+          title: Shipment Id
+        carrier:
+          type: string
+          title: Carrier
+        status:
+          type: string
+          title: Status
+        tracking_code:
+          type: string
+          title: Tracking Code
+        estimated_delivery:
+          type: string
+          format: date
+          title: Estimated Delivery
+        last_update:
+          type: string
+          format: date-time
+          title: Last Update
+        events:
+          items:
+            $ref: '#/components/schemas/ShipmentEvent'
+          type: array
+          title: Events
+      type: object
+      required:
+      - order_id
+      - shipment_id
+      - carrier
+      - status
+      - tracking_code
+      - estimated_delivery
+      - last_update
+      title: ShipmentResponse
+    SupportCaseCreate:
+      properties:
+        customer_id:
+          type: string
+          title: Customer Id
+        category:
+          type: string
+          title: Category
+        summary:
+          type: string
+          title: Summary
+        description:
+          type: string
+          title: Description
+      type: object
+      required:
+      - customer_id
+      - category
+      - summary
+      - description
+      title: SupportCaseCreate
+    SupportCaseDetail:
+      properties:
+        case_id:
+          type: string
+          title: Case Id
+        protocol:
+          type: string
+          title: Protocol
+        customer_id:
+          type: string
+          title: Customer Id
+        category:
+          type: string
+          title: Category
+        summary:
+          type: string
+          title: Summary
+        description:
+          type: string
+          title: Description
+        status:
+          type: string
+          title: Status
+        priority:
+          type: string
+          title: Priority
+        lab_group:
+          type: string
+          title: Lab Group
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updated At
+      type: object
+      required:
+      - case_id
+      - protocol
+      - customer_id
+      - category
+      - summary
+      - description
+      - status
+      - priority
+      - lab_group
+      - created_at
+      title: SupportCaseDetail
+    SupportCaseResponse:
+      properties:
+        case_id:
+          type: string
+          title: Case Id
+        status:
+          type: string
+          title: Status
+        protocol:
+          type: string
+          title: Protocol
+      type: object
+      required:
+      - case_id
+      - status
+      - protocol
+      title: SupportCaseResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ValidationPayload:
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email
+        amount:
+          type: number
+          minimum: 0.0
+          title: Amount
+      type: object
+      required:
+      - email
+      - amount
+      title: ValidationPayload
+      examples:
+      - amount: 42.5
+        email: buyer@quantum.example
+    WarehouseStock:
+      properties:
+        warehouse_id:
+          type: string
+          title: Warehouse Id
+        city:
+          type: string
+          title: City
+        available:
+          type: integer
+          title: Available
+        reserved:
+          type: integer
+          title: Reserved
+      type: object
+      required:
+      - warehouse_id
+      - city
+      - available
+      - reserved
+      title: WarehouseStock

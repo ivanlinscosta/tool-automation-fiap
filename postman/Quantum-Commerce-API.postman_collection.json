@@ -1,0 +1,1617 @@
+{
+  "info": {
+    "name": "Quantum-Commerce-API",
+    "description": "Quantum Commerce API (FIAP Tools, Automations and Workflows)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Root",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Railway Health Check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "health"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Search Customers",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/search",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "name",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Customer By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Customer Context",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}/context",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001",
+            "context"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Customer Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001",
+            "orders"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "limit",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Customer Recommendation Context",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}/recommendation-context",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001",
+            "recommendation-context"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Search Products Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/products/search",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "category",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "brand",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "min_price",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "max_price",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Catalog Stats Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/catalog/stats",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "catalog",
+            "stats"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Product Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/products/{sku}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "products",
+            "QTM-NBK-00123"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Inventory Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/inventory/{sku}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "inventory",
+            "QTM-NBK-00123"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Inventory Availability Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/inventory/{sku}/availability",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "inventory",
+            "QTM-NBK-00123",
+            "availability"
+          ],
+          "query": [
+            {
+              "key": "postal_code",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Order By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/orders/{order_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "ORD-2026-10001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Order Shipment",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/orders/{order_id}/shipment",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "orders",
+            "ORD-2026-10001",
+            "shipment"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Shipment By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/shipments/{shipment_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "shipments",
+            "SHP-87421"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "List Policies Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/policies",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "policies"
+          ],
+          "query": [
+            {
+              "key": "category",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "country",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Search Policies Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/policies/search",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "policies",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Policy Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/policies/{policy_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "policies",
+            "POL-RETURN-001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Check Return Eligibility",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/returns/check-eligibility",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "returns",
+            "check-eligibility"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": \"string\",\n  \"sku\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Return",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/returns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "returns"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_id\": \"string\",\n  \"order_id\": \"string\",\n  \"sku\": \"string\",\n  \"reason\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Return By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/returns/{return_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "returns",
+            "RET-90001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "List Customer Returns",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}/returns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001",
+            "returns"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Create Support Case",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/support/cases",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support",
+            "cases"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_id\": \"string\",\n  \"category\": \"string\",\n  \"summary\": \"string\",\n  \"description\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Support Case",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/support/cases/{case_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support",
+            "cases",
+            "CASE-2026-1001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "List Customer Support Cases",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/customers/{customer_id}/support-cases",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customers",
+            "CUS-1001",
+            "support-cases"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Check Support Priority",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/support/priority/check",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support",
+            "priority",
+            "check"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"category\": \"string\",\n  \"impact\": \"string\",\n  \"urgency\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Approval",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/approvals",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "approvals"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"string\",\n  \"reference_id\": \"string\",\n  \"requested_by\": \"string\",\n  \"amount\": 0,\n  \"reason\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Approval",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/approvals/{approval_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "approvals",
+            "APR-1001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Create Approval Decision",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/approvals/{approval_id}/decision",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "approvals",
+            "APR-1001",
+            "decision"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decision\": \"string\",\n  \"comment\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create Refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/refunds",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "refunds"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": \"string\",\n  \"amount\": 0,\n  \"reason\": \"string\",\n  \"approval_id\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Refund",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/refunds/{refund_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "refunds",
+            "REF-10005"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "List Active Promotions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/promotions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "promotions"
+          ],
+          "query": [
+            {
+              "key": "country",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Eligible Promotions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/promotions/eligible",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "promotions",
+            "eligible"
+          ],
+          "query": [
+            {
+              "key": "customer_id",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "sku",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Promotion By Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/promotions/{promotion_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "promotions",
+            "PROMO-101"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Create Interaction Route",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/interactions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "interactions"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_id\": \"string\",\n  \"channel\": \"string\",\n  \"message\": \"string\",\n  \"response\": \"string\",\n  \"source\": \"string\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List Interactions Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/interactions",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "interactions"
+          ],
+          "query": [
+            {
+              "key": "customer_id",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "limit",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Interaction Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/interactions/{interaction_id}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "interactions",
+            "INT-10001"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "List Events Route",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/events",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "customer_id",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "order_id",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "type",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "source",
+              "value": "",
+              "description": ""
+            },
+            {
+              "key": "limit",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Get Meta",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/meta",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "meta"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Lab Slow",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/lab/slow",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "lab",
+            "slow"
+          ],
+          "query": [
+            {
+              "key": "seconds",
+              "value": "",
+              "description": ""
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Lab Error",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/lab/error",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "lab",
+            "error"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Lab Rate Limit",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/lab/rate-limit",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "lab",
+            "rate-limit"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Lab Not Found",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/lab/not-found",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "lab",
+            "not-found"
+          ],
+          "query": []
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "Lab Validation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Lab-Group",
+            "value": "grupo-01",
+            "type": "text"
+          },
+          {
+            "key": "X-Request-ID",
+            "value": "req-{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/v1/lab/validation",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "lab",
+            "validation"
+          ],
+          "query": []
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"string\",\n  \"amount\": 0\n}"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

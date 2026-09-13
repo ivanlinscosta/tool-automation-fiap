@@ -1,170 +1,165 @@
 #!/usr/bin/env python3
-# pyright: reportMissingModuleSource=false
 
 from __future__ import annotations
 
 import json
 import os
 import sys
-from typing import cast
-
-try:
-    import requests
-except ModuleNotFoundError:
-    requests = None
+from urllib import error, request
 
 
-BASE_URL = os.getenv("FLOWDESK_BASE_URL", "http://localhost:8000").rstrip("/")
+BASE_URL = os.getenv("QUANTUM_BASE_URL", "http://localhost:8000").rstrip("/")
 HEADERS = {
-    "Content-Type": "application/json",
-    "X-Student-ID": os.getenv("FLOWDESK_STUDENT_ID", "grupo-01"),
+    "X-Lab-Group": os.getenv("QUANTUM_LAB_GROUP", "smoke-tests"),
     "X-Request-ID": "smoke-test-001",
 }
 TIMEOUT = 10
 
 
-def colorize(text: str, color: str) -> str:
-    if not sys.stdout.isatty():
-        return text
+def fetch_json(path: str, *, method: str = "GET", payload: dict | None = None) -> tuple[int, object]:
+    data = None
+    headers = dict(HEADERS)
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
 
-    codes = {
-        "red": "31",
-        "green": "32",
-        "yellow": "33",
-        "blue": "34",
-        "cyan": "36",
-        "bold": "1",
-    }
-    code = codes.get(color)
-    return f"\033[{code}m{text}\033[0m" if code else text
-
-
-def print_step(label: str, message: str, color: str = "blue") -> None:
-    print(f"{colorize(label, 'bold')} {colorize(message, color)}")
-
-
-def request_json(
-    method: str,
-    path: str,
-    *,
-    expected_status: int,
-    payload: dict[str, object] | None = None,
-) -> dict[str, object]:
-    if requests is None:
-        raise RuntimeError("The 'requests' package is not installed for this Python interpreter. Install it with 'pip install requests'.")
-
-    url = f"{BASE_URL}{path}"
+    req = request.Request(f"{BASE_URL}{path}", data=data, headers=headers, method=method)
     try:
-        response = requests.request(method, url, headers=HEADERS, json=payload, timeout=TIMEOUT)
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Request failed for {method} {path}: {exc}") from exc
+        with request.urlopen(req, timeout=TIMEOUT) as response:
+            body = response.read().decode("utf-8")
+            return response.status, json.loads(body)
+    except error.HTTPError as exc:
+        body = exc.read().decode("utf-8")
+        try:
+            parsed = json.loads(body)
+        except json.JSONDecodeError:
+            parsed = body
+        return exc.code, parsed
 
-    if response.status_code != expected_status:
-        safe_body = response.text[:300].strip()
-        raise RuntimeError(
-            f"Unexpected status for {method} {path}: {response.status_code} (expected {expected_status}). Body: {safe_body}"
-        )
 
+def run_check(name: str, func) -> bool:
     try:
-        data = cast(object, json.loads(response.text))
-    except ValueError as exc:
-        raise RuntimeError(f"Invalid JSON returned by {method} {path}") from exc
-
-    if not isinstance(data, dict):
-        raise RuntimeError(f"Unexpected JSON shape returned by {method} {path}: expected an object")
-
-    return cast(dict[str, object], data)
-
-
-def request_list(
-    method: str,
-    path: str,
-    *,
-    expected_status: int,
-) -> list[object]:
-    if requests is None:
-        raise RuntimeError("The 'requests' package is not installed.")
-
-    url = f"{BASE_URL}{path}"
-    try:
-        response = requests.request(method, url, headers=HEADERS, timeout=TIMEOUT)
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Request failed for {method} {path}: {exc}") from exc
-
-    if response.status_code != expected_status:
-        safe_body = response.text[:300].strip()
-        raise RuntimeError(
-            f"Unexpected status for {method} {path}: {response.status_code} (expected {expected_status}). Body: {safe_body}"
-        )
-
-    try:
-        data = json.loads(response.text)
-    except ValueError as exc:
-        raise RuntimeError(f"Invalid JSON returned by {method} {path}") from exc
-
-    if not isinstance(data, list):
-        raise RuntimeError(f"Unexpected JSON shape returned by {method} {path}: expected a list")
-
-    return data
+        func()
+        print(f"PASS {name}")
+        return True
+    except AssertionError as exc:
+        print(f"FAIL {name}: {exc}")
+        return False
+    except Exception as exc:  # noqa: BLE001
+        print(f"FAIL {name}: {exc}")
+        return False
 
 
 def main() -> int:
-    print_step("Base URL:", BASE_URL, "cyan")
+    checks = [
+        (
+            "GET /health",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "status", "ok"),
+                )
+            )(*fetch_json("/health")),
+        ),
+        (
+            "GET /api/v1/health",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "status", "ok"),
+                )
+            )(*fetch_json("/api/v1/health")),
+        ),
+        (
+            "GET /api/v1/customers/CUS-1001",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "id", "CUS-1001"),
+                )
+            )(*fetch_json("/api/v1/customers/CUS-1001")),
+        ),
+        (
+            "GET /api/v1/orders/ORD-2026-10001",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "id", "ORD-2026-10001"),
+                )
+            )(*fetch_json("/api/v1/orders/ORD-2026-10001")),
+        ),
+        (
+            "GET /api/v1/inventory/QTM-NBK-00123",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "sku", "QTM-NBK-00123"),
+                    assert_field(payload, "total_available", 37),
+                )
+            )(*fetch_json("/api/v1/inventory/QTM-NBK-00123")),
+        ),
+        (
+            "GET /api/v1/inventory/QTM-NBK-00150/availability (out of stock)",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "sku", "QTM-NBK-00150"),
+                    assert_field(payload, "available", False),
+                    assert_field(payload, "quantity", 0),
+                )
+            )(*fetch_json("/api/v1/inventory/QTM-NBK-00150/availability?postal_code=01310-100")),
+        ),
+        (
+            "POST /api/v1/returns/check-eligibility (inside window)",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "eligible", True),
+                    assert_field(payload, "reason", "within_return_window"),
+                )
+            )(
+                *fetch_json(
+                    "/api/v1/returns/check-eligibility",
+                    method="POST",
+                    payload={"order_id": "ORD-2026-10005", "sku": "QTM-AUD-01023"},
+                )
+            ),
+        ),
+        (
+            "POST /api/v1/returns/check-eligibility (outside window)",
+            lambda: (
+                lambda status_code, payload: (
+                    assert_status(status_code, 200),
+                    assert_field(payload, "eligible", False),
+                    assert_field(payload, "reason", "outside_return_window"),
+                )
+            )(
+                *fetch_json(
+                    "/api/v1/returns/check-eligibility",
+                    method="POST",
+                    payload={"order_id": "ORD-2026-10007", "sku": "QTM-BED-01089"},
+                )
+            ),
+        ),
+    ]
 
-    try:
-        health = request_json("GET", "/health", expected_status=200)
-        print_step("Health:", f"{health.get('status')} / version {health.get('version')}", "green")
+    passed = sum(1 for name, check in checks if run_check(name, check))
+    total = len(checks)
+    print(f"Summary: {passed}/{total} checks passed")
+    return 0 if passed == total else 1
 
-        student = request_json("GET", "/api/v1/students/STU001", expected_status=200)
-        print_step("Student:", f"{student.get('name')} ({student.get('course')})", "green")
 
-        dept = request_json("GET", "/api/v1/departments/digital_learning", expected_status=200)
-        print_step("Department:", str(dept.get("department", "<unknown>")), "green")
+def assert_status(actual: int, expected: int) -> None:
+    if actual != expected:
+        raise AssertionError(f"expected HTTP {expected}, got {actual}")
 
-        search = request_json("GET", "/api/v1/knowledge/search?q=acesso+ambiente", expected_status=200)
-        results = search.get("results", [])
-        print_step("Knowledge:", f"{len(results)} results found", "green")
 
-        priority = request_json(
-            "POST",
-            "/api/v1/priority/check",
-            expected_status=200,
-            payload={
-                "student_id": "STU001",
-                "category": "digital_learning",
-                "impact": "high",
-                "urgency": "high",
-            },
-        )
-        print_step("Priority:", str(priority.get("priority", "<unknown>")), "green")
-
-        req = request_json(
-            "POST",
-            "/api/v1/requests",
-            expected_status=201,
-            payload={
-                "student_id": "STU001",
-                "category": "digital_learning",
-                "summary": "Smoke test request",
-                "description": "Request created automatically by smoke test.",
-                "source": "smoke_test",
-            },
-        )
-        request_id = str(req.get("request_id", "<unknown>"))
-        protocol = str(req.get("protocol", "<unknown>"))
-        print_step("Request created:", f"{request_id} ({protocol})", "green")
-
-        fetched = request_json("GET", f"/api/v1/requests/{request_id}", expected_status=200)
-        print_step("Request status:", str(fetched.get("status", "<unknown>")), "green")
-
-        events = request_list("GET", "/api/v1/events", expected_status=200)
-        print_step("Events:", f"{len(events)} audit events", "green")
-
-        print(colorize("Smoke test completed successfully.", "green"))
-        return 0
-    except RuntimeError as exc:
-        print(colorize(f"Smoke test failed: {exc}", "red"), file=sys.stderr)
-        return 1
+def assert_field(payload: object, field: str, expected: object) -> None:
+    if not isinstance(payload, dict):
+        raise AssertionError(f"expected JSON object, got {type(payload).__name__}")
+    actual = payload.get(field)
+    if actual != expected:
+        raise AssertionError(f"expected {field}={expected!r}, got {actual!r}")
 
 
 if __name__ == "__main__":

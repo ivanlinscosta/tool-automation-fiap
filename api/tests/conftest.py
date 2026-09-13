@@ -21,7 +21,7 @@ app = main_module.app
 
 @pytest.fixture(autouse=True)
 def setup_database(tmp_path: Path) -> Generator[None, None, None]:
-    test_database_path = tmp_path / "test_fiap_student_desk.db"
+    test_database_path = tmp_path / "test_quantum_commerce.db"
     test_database_url = f"sqlite:///{test_database_path}"
 
     engine = create_engine(test_database_url, connect_args={"check_same_thread": False})
@@ -68,42 +68,7 @@ def db_session() -> Generator[Session, None, None]:
 
 @pytest.fixture
 def make_headers() -> Callable[[str, str], dict[str, str]]:
-    def _make_headers(student_id: str = "grupo-01", request_id: str = "req-001") -> dict[str, str]:
-        return {"X-Student-ID": student_id, "X-Request-ID": request_id}
+    def _make_headers(lab_group: str = "grupo-01", request_id: str = "req-001") -> dict[str, str]:
+        return {"X-Lab-Group": lab_group, "X-Request-ID": request_id}
 
     return _make_headers
-
-
-@pytest.fixture
-def request_payload() -> dict[str, str]:
-    return {
-        "student_id": "STU001",
-        "category": "academic_services",
-        "priority": "medium",
-        "summary": "Need enrollment declaration",
-        "description": "Fictional didactic request for an enrollment declaration.",
-        "source": "api",
-    }
-
-
-@pytest.fixture
-def approval_request_payload() -> dict[str, str]:
-    return {
-        "student_id": "STU001",
-        "request_type": "visitor_campus_authorization",
-        "justification": "Fictional didactic approval flow for campus access.",
-        "risk": "medium",
-    }
-
-
-@pytest.fixture
-def interaction_payload() -> dict[str, object]:
-    return {
-        "student_id": "STU001",
-        "request_text": "Como acesso o ambiente virtual?",
-        "category": "digital_learning",
-        "response_type": "automatic",
-        "response_text": "Use a orientação didática do artigo KB001.",
-        "knowledge_articles": ["KB001"],
-        "source": "api",
-    }

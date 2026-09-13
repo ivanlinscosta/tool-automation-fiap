@@ -1,8 +1,0 @@
-{
-  "student_id": "STU001",
-  "category": "digital_learning",
-  "priority": "high",
-  "summary": "Acesso ao ambiente virtual bloqueado",
-  "description": "Mesmo após redefinir a senha, o portal continua rejeitando o login.",
-  "source": "n8n"
-}

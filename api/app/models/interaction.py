@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,35 +11,38 @@ class Interaction(Base):
     __tablename__ = "interactions"
 
     interaction_id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
-    student_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    request_text: Mapped[str] = mapped_column(Text, nullable=False)
-    category: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    response_type: Mapped[str] = mapped_column(String, nullable=False)
-    response_text: Mapped[str] = mapped_column(Text, nullable=False)
-    knowledge_articles: Mapped[str] = mapped_column(Text, nullable=False)
+    customer_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    channel: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    response: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[str] = mapped_column(String, nullable=False)
-    lab_student_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    lab_group: Mapped[str] = mapped_column(String, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
 
 class InteractionCreate(BaseModel):
-    student_id: str
-    request_text: str
-    category: str
-    response_type: str = Field(description="automatic or human")
-    response_text: str
-    knowledge_articles: list[str] = Field(default_factory=list)
-    source: str = Field(default="api")
+    customer_id: str
+    channel: str
+    message: str
+    response: str
+    source: str = Field(default="ai-agent")
 
 
 class InteractionResponse(BaseModel):
     interaction_id: str
-    student_id: str
-    request_text: str
-    category: str
-    response_type: str
-    response_text: str
-    knowledge_articles: list[str]
-    source: str
-    lab_student_id: str
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InteractionDetail(BaseModel):
+    interaction_id: str
+    customer_id: str
+    channel: str
+    message: str
+    response: str
+    source: str
+    lab_group: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

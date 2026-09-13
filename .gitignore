@@ -6,7 +6,11 @@ __pycache__/
 .Python
 venv/
 .venv/
+.venv
 ENV/
+
+# Railway
+.railway/
 
 # Environment
 .env

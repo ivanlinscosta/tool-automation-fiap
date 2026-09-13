@@ -1,114 +1,142 @@
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, Path, status
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ...db.database import get_db
-from ...db.seed import get_student
-from ...models.approval_request import ApprovalDecision, ApprovalRequestCreate, ApprovalRequestResponse
-from ...services.approval_service import create_approval_request, decide_approval_request, get_approval_request
+from ...models.approval import Approval, ApprovalCreate, ApprovalDecision, ApprovalDetail, ApprovalResponse
 from ...services.audit_service import create_event
+from ...services.idempotency_service import IdempotencyConflictError, mark_applied, replay_or_none
 
 
 router = APIRouter()
 
 
-@router.post(
-    "/api/v1/approval-requests",
-    response_model=ApprovalRequestResponse,
-    status_code=status.HTTP_201_CREATED,
-    tags=["Approval Requests"],
-    operation_id="create_approval_request",
-    summary="Create approval request",
-    description="Create a fictional approval request for sensitive academic actions.",
-)
-async def create_approval_request_route(
-    approval_data: ApprovalRequestCreate = Body(
-        ...,
-        openapi_examples={
-            "sensitive_request": {
-                "summary": "Sensitive academic action",
-                "value": {
-                    "student_id": "STU001",
-                    "request_type": "visitor_campus_authorization",
-                    "justification": "Fictional didactic request that requires review by a human approver in the lab.",
-                    "risk": "high",
-                },
-            }
-        },
-    ),
-    x_student_id: str = Header(default="anonymous", alias="X-Student-ID"),
-    x_request_id: str = Header(default="anonymous", alias="X-Request-ID"),
-    db: Session = Depends(get_db),
-) -> ApprovalRequestResponse:
-    if get_student(approval_data.student_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
+def _get_approval_or_404(db: Session, approval_id: str, lab_group: str) -> Approval:
+    approval = db.execute(
+        select(Approval).where(Approval.approval_id == approval_id, Approval.lab_group == lab_group)
+    ).scalar_one_or_none()
+    if approval is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Approval not found")
+    return approval
 
-    approval_request = create_approval_request(db=db, payload=approval_data, lab_student_id=x_student_id)
+
+def _next_approval_number(db: Session) -> int:
+    approval_ids = db.execute(select(Approval.approval_id)).scalars().all()
+    numbers = [int(approval_id.split("-")[-1]) for approval_id in approval_ids]
+    return max(numbers, default=0) + 1
+
+
+@router.post(
+    "/api/v1/approvals",
+    response_model=ApprovalResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Approvals"],
+    operation_id="create_approval",
+)
+async def create_approval(
+    payload: ApprovalCreate,
+    request: Request,
+    x_lab_group: str = Header(default="anonymous", alias="X-Lab-Group"),
+    db: Session = Depends(get_db),
+) -> ApprovalResponse | JSONResponse:
+    idem_key = request.headers.get("Idempotency-Key")
+    if idem_key:
+        try:
+            replay = replay_or_none(db, idem_key, x_lab_group, "approval")
+        except IdempotencyConflictError as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=exc.detail) from exc
+        if replay:
+            existing = db.get(Approval, replay.resource_id)
+            if existing and existing.lab_group == x_lab_group:
+                return JSONResponse(
+                    status_code=status.HTTP_200_OK,
+                    content=ApprovalResponse.model_validate(existing).model_dump(mode="json"),
+                )
+
+    approval = Approval(
+        approval_id=f"APR-{_next_approval_number(db)}",
+        type=payload.type,
+        reference_id=payload.reference_id,
+        requested_by=payload.requested_by,
+        amount=payload.amount,
+        reason=payload.reason,
+        status="pending",
+        decision=None,
+        comment=None,
+        decided_by=None,
+        lab_group=x_lab_group,
+        created_at=datetime.now(UTC),
+        decided_at=None,
+    )
+    db.add(approval)
+    db.commit()
+    db.refresh(approval)
+
     _ = create_event(
         db=db,
         event_type="approval_requested",
-        student_id=x_student_id,
-        fictional_student_id=approval_request.student_id,
-        resource_type="approval_request",
-        resource_id=approval_request.approval_id,
-        metadata={"request_id": x_request_id, "risk": approval_request.risk, "status": approval_request.status},
+        lab_group=x_lab_group,
+        resource_type="approval",
+        resource_id=approval.approval_id,
+        metadata={"type": approval.type, "reference_id": approval.reference_id, "amount": approval.amount},
     )
-    return approval_request
+
+    if idem_key:
+        mark_applied(db, idem_key, x_lab_group, "approval", approval.approval_id)
+
+    return ApprovalResponse.model_validate(approval)
 
 
 @router.get(
-    "/api/v1/approval-requests/{approval_id}",
-    response_model=ApprovalRequestResponse,
-    tags=["Approval Requests"],
-    operation_id="get_approval_request",
-    summary="Get approval request",
-    description="Retrieve a fictional approval request by ID.",
-    responses={404: {"description": "Approval request not found"}},
+    "/api/v1/approvals/{approval_id}",
+    response_model=ApprovalDetail,
+    tags=["Approvals"],
+    operation_id="get_approval",
 )
-async def get_approval_request_route(
-    approval_id: str = Path(..., examples=["APR-501"]),
-    x_student_id: str = Header(default="anonymous", alias="X-Student-ID"),
-    x_request_id: str = Header(default="anonymous", alias="X-Request-ID"),
+async def get_approval(
+    approval_id: str,
+    x_lab_group: str = Header(default="anonymous", alias="X-Lab-Group"),
     db: Session = Depends(get_db),
-) -> ApprovalRequestResponse:
-    _ = x_request_id
-    approval_request = get_approval_request(db=db, approval_id=approval_id)
-    if approval_request is None or approval_request.lab_student_id != x_student_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Approval request not found")
-    return approval_request
+) -> ApprovalDetail:
+    approval = _get_approval_or_404(db, approval_id, x_lab_group)
+    return ApprovalDetail.model_validate(approval)
 
 
 @router.post(
-    "/api/v1/approval-requests/{approval_id}/decision",
-    response_model=ApprovalRequestResponse,
-    tags=["Approval Requests"],
-    operation_id="decide_approval_request",
-    summary="Approve or reject approval request",
-    description="Apply a human decision to a pending approval request.",
-    responses={404: {"description": "Approval request not found"}, 400: {"description": "Approval request cannot be decided"}},
+    "/api/v1/approvals/{approval_id}/decision",
+    response_model=ApprovalDetail,
+    tags=["Approvals"],
+    operation_id="create_approval_decision",
 )
-async def decide_approval_request_route(
-    approval_id: str = Path(..., examples=["APR-501"]),
-    decision_data: ApprovalDecision = Body(...),
-    x_student_id: str = Header(default="anonymous", alias="X-Student-ID"),
-    x_request_id: str = Header(default="anonymous", alias="X-Request-ID"),
+async def create_approval_decision(
+    approval_id: str,
+    payload: ApprovalDecision,
+    x_lab_group: str = Header(default="anonymous", alias="X-Lab-Group"),
     db: Session = Depends(get_db),
-) -> ApprovalRequestResponse:
-    existing_request = get_approval_request(db=db, approval_id=approval_id)
-    if existing_request is None or existing_request.lab_student_id != x_student_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Approval request not found")
+) -> ApprovalDetail:
+    approval = _get_approval_or_404(db, approval_id, x_lab_group)
+    if approval.status != "pending":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Approval already decided")
 
-    try:
-        approval_request = decide_approval_request(db=db, approval_id=approval_id, decision=decision_data)
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    approval.status = payload.decision
+    approval.decision = payload.decision
+    approval.comment = payload.comment
+    approval.decided_by = "supervisor.ops@quantum.example"
+    approval.decided_at = datetime.now(UTC)
+    db.add(approval)
+    db.commit()
+    db.refresh(approval)
 
     _ = create_event(
         db=db,
-        event_type="approval_approved" if decision_data.decision == "approve" else "approval_rejected",
-        student_id=x_student_id,
-        fictional_student_id=approval_request.student_id,
-        resource_type="approval_request",
-        resource_id=approval_request.approval_id,
-        metadata={"request_id": x_request_id, "decision": decision_data.decision, "approved_by": decision_data.approved_by},
+        event_type="approval_decision",
+        lab_group=x_lab_group,
+        resource_type="approval",
+        resource_id=approval.approval_id,
+        metadata={"decision": approval.decision, "comment": approval.comment},
     )
-    return approval_request
+
+    return ApprovalDetail.model_validate(approval)

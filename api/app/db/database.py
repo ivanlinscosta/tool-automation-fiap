@@ -28,13 +28,20 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     for module_name in (
-        "app.models.approval_request",
-        "app.models.department",
+        "app.models.approval",
+        "app.models.customer",
         "app.models.event",
+        "app.models.idempotency",
         "app.models.interaction",
-        "app.models.knowledge",
-        "app.models.student",
-        "app.models.student_request",
+        "app.models.inventory",
+        "app.models.order",
+        "app.models.policy",
+        "app.models.product",
+        "app.models.promotion",
+        "app.models.refund",
+        "app.models.return_record",
+        "app.models.shipment",
+        "app.models.support_case",
     ):
         import_module(module_name)
     Base.metadata.create_all(bind=engine)

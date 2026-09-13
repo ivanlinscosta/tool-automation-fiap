@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         request_id = request.headers.get("X-Request-ID") or str(uuid4())
-        student_id = request.headers.get("X-Student-ID") or "anonymous"
+        lab_group = request.headers.get("X-Lab-Group") or "anonymous"
 
         request.state.request_id = request_id
-        request.state.student_id = student_id
+        request.state.lab_group = lab_group
 
         start_time = time.perf_counter()
         status_code = 500
@@ -29,9 +29,9 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         finally:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             logger.info(
-                "request_id=%s student_id=%s method=%s path=%s status_code=%s elapsed_ms=%s",
+                "request_id=%s lab_group=%s method=%s path=%s status_code=%s elapsed_ms=%s",
                 request_id,
-                student_id,
+                lab_group,
                 request.method,
                 request.url.path,
                 status_code,

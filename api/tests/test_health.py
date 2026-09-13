@@ -1,21 +1,15 @@
-def test_health_check(client, make_headers):
-    response = client.get("/health", headers=make_headers())
+from fastapi.testclient import TestClient
 
-    assert response.status_code == 200
-
-    data = response.json()
-    assert data["status"] == "ok"
-    assert data["service"] == "fiap-student-desk-lab-api"
-    assert data["version"] == "1.0.0"
+from app.main import app
 
 
-def test_root_endpoint(client, make_headers):
-    response = client.get("/", headers=make_headers(request_id="req-root"))
+def test_health_endpoints_return_expected_payload():
+    with TestClient(app) as client:
+        root_health_response = client.get("/health")
+        api_health_response = client.get("/api/v1/health")
 
-    assert response.status_code == 200
-
-    data = response.json()
-    assert data["service"] == "FIAP Student Desk Lab API"
-    assert data["docs"] == "/docs"
-    assert data["openapi"] == "/openapi.json"
-    assert data["health"] == "/health"
+    expected = {"status": "ok", "service": "quantum-commerce-api", "version": "2.0.0"}
+    assert root_health_response.status_code == 200
+    assert api_health_response.status_code == 200
+    assert root_health_response.json() == expected
+    assert api_health_response.json() == expected

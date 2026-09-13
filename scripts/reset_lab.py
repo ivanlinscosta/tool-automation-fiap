@@ -2,48 +2,59 @@
 
 from __future__ import annotations
 
-import argparse
+import os
 import sys
-from pathlib import Path
+
+from sqlalchemy import func, select
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "api"))
+
+from app.db.database import Base, SessionLocal, engine
+from app.db.seed import seed_data
+from app.models.approval import Approval
+from app.models.customer import Customer
+from app.models.event import Event
+from app.models.interaction import Interaction
+from app.models.order import Order
+from app.models.policy import Policy
+from app.models.product import Product
+from app.models.promotion import Promotion
+from app.models.refund import Refund
+from app.models.return_record import ReturnRecord
+from app.models.shipment import Shipment
+from app.models.support_case import SupportCase
 
 
-DB_PATH = Path(__file__).resolve().parent.parent / "fiap_student_desk.db"
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Delete the FIAP Student Desk Lab SQLite database so seed data is recreated on next startup.")
-    _ = parser.add_argument("--force", action="store_true", help="Skip the confirmation prompt.")
-    return parser.parse_args()
-
-
-def confirm_delete() -> bool:
-    print(f"This will permanently delete: {DB_PATH}")
-    print("On the next API startup, the database tables and seed data will be recreated.")
-    answer = input("Type 'yes' to continue: ").strip().lower()
-    return answer == "yes"
+def _count_rows(session, model) -> int:
+    return int(session.execute(select(func.count()).select_from(model)).scalar_one())
 
 
 def main() -> int:
-    args = parse_args()
-    force_value: object = getattr(args, "force", False)
-    force = force_value is True
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    seed_data()
 
-    if not DB_PATH.exists():
-        print(f"Database file not found: {DB_PATH}")
-        return 0
-
-    if not force and not confirm_delete():
-        print("Aborted. Database was not deleted.")
-        return 1
-
+    session = SessionLocal()
     try:
-        DB_PATH.unlink()
-    except OSError as exc:
-        print(f"Failed to delete database: {exc}", file=sys.stderr)
-        return 1
-
-    print(f"Deleted database file: {DB_PATH}")
-    print("Restart the API to recreate the SQLite database and seed records.")
+        print("Quantum Commerce lab database reset and seeded.")
+        print(
+            {
+                "customers": _count_rows(session, Customer),
+                "products": _count_rows(session, Product),
+                "orders": _count_rows(session, Order),
+                "shipments": _count_rows(session, Shipment),
+                "policies": _count_rows(session, Policy),
+                "support_cases": _count_rows(session, SupportCase),
+                "return_records": _count_rows(session, ReturnRecord),
+                "approvals": _count_rows(session, Approval),
+                "refunds": _count_rows(session, Refund),
+                "promotions": _count_rows(session, Promotion),
+                "interactions": _count_rows(session, Interaction),
+                "events": _count_rows(session, Event),
+            }
+        )
+    finally:
+        session.close()
     return 0
 
 

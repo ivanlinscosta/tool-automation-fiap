@@ -30,8 +30,11 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="FIAP Student Desk Lab API",
-    description="Central Inteligente de Solicitações Acadêmicas — pedagogical API for automation lab",
+    title="Quantum Commerce API",
+    description=(
+        "API oficial do case fictício Quantum Commerce — disciplina Tools, Automations and Workflows (FIAP). "
+        "Backend determinístico para agentes n8n, Dify, Power Automate e Python. Sem LLM no backend."
+    ),
     version=settings.VERSION,
     lifespan=lifespan,
 )
@@ -48,25 +51,37 @@ app.add_middleware(
 app.add_middleware(RequestContextMiddleware)
 
 from .api.routes.approvals import router as approvals_router
-from .api.routes.departments import router as departments_router
+from .api.routes.catalog import router as catalog_router
+from .api.routes.customers import router as customers_router
 from .api.routes.events import router as events_router
 from .api.routes.health import router as health_router
 from .api.routes.interactions import router as interactions_router
-from .api.routes.knowledge import router as knowledge_router
+from .api.routes.inventory import router as inventory_router
 from .api.routes.lab import router as lab_router
-from .api.routes.priority import router as priority_router
-from .api.routes.requests import router as requests_router
+from .api.routes.logistics import router as logistics_router
+from .api.routes.meta import router as meta_router
+from .api.routes.orders import router as orders_router
+from .api.routes.policies import router as policies_router
+from .api.routes.promotions import router as promotions_router
+from .api.routes.refunds import router as refunds_router
+from .api.routes.returns import router as returns_router
 from .api.routes.root import router as root_router
-from .api.routes.students import router as students_router
+from .api.routes.support import router as support_router
 
 app.include_router(root_router)
 app.include_router(health_router)
-app.include_router(students_router)
-app.include_router(departments_router)
-app.include_router(knowledge_router)
-app.include_router(priority_router)
-app.include_router(requests_router)
-app.include_router(interactions_router)
+app.include_router(customers_router)
+app.include_router(catalog_router)
+app.include_router(inventory_router)
+app.include_router(orders_router)
+app.include_router(logistics_router)
+app.include_router(policies_router)
+app.include_router(returns_router)
+app.include_router(support_router)
 app.include_router(approvals_router)
+app.include_router(refunds_router)
+app.include_router(promotions_router)
+app.include_router(interactions_router)
 app.include_router(events_router)
+app.include_router(meta_router)
 app.include_router(lab_router)
