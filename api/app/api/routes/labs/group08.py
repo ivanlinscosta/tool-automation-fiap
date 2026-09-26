@@ -631,6 +631,14 @@ async def list_history(
     return build_page(db, query, limit, offset, serializer=lambda item: UnlockHistoryResponse.model_validate(item).model_dump())
 
 
+@router.get(
+    f"{PREFIX}/unlock-stats",
+    response_model=UnlockStatsResponse,
+    tags=[TAG],
+    operation_id="labs_group08_stats",
+    summary="Aggregate unlock requests by status and unlock decisions by type",
+    responses={422: _RESPONSES_422},
+)
 async def unlock_stats(
     scenario: Scenario = None,
     group: LabGroup = Group08,

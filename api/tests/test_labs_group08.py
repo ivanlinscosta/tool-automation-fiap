@@ -128,6 +128,32 @@ def test_group08_history_filters_work_through_shared_history_route(client: TestC
     assert all(item["request_id"] == request_id for item in filtered.json()["items"])
 
 
+def test_group08_stats_available_on_own_route_and_shared_route(client: TestClient) -> None:
+    own = client.get(f"{BASE}/08/unlock-stats", headers=_headers())
+    assert own.status_code == 200, own.text
+    body = own.json()
+    assert body["requests_by_status"]
+    assert body["decisions_by_type"]
+
+    shared = client.get(f"{BASE}/08/stats", headers=_headers())
+    assert shared.status_code == 200, shared.text
+    assert shared.json() == body
+
+    assert client.get(f"{BASE}/8/unlock-stats", headers=_headers()).status_code == 200
+    wrong = client.get(f"{BASE}/07/unlock-stats", headers=_headers())
+    assert wrong.status_code == 404
+    assert "does not belong to lab group 08" in wrong.json()["detail"]
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected"),
+    [("validation_error", 422), ("not_found", 404), ("duplicate", 409), ("server_error", 500)],
+)
+def test_group08_unlock_stats_scenarios(client: TestClient, scenario: str, expected: int) -> None:
+    response = client.get(f"{BASE}/08/unlock-stats", params={"scenario": scenario}, headers=_headers())
+    assert response.status_code == expected, (scenario, response.text)
+
+
 @pytest.mark.parametrize(
     ("scenario", "expected"),
     [("validation_error", 422), ("not_found", 404), ("duplicate", 409), ("server_error", 500)],
