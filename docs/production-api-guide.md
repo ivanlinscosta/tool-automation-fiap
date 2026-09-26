@@ -16,15 +16,13 @@ executado e validado contra essa instância local.
 | **Healthcheck** | `GET /health` |
 | **Prefixo dos labs** | `/api/v1/labs` |
 | **Prefixo de cada grupo** | `/api/v1/labs/groups/{group_id}` |
-| **Total de operações** | 169 no código local (164 dos 12 grupos + 5 de plataforma); 168 em produção — falta apenas `GET /unlock-stats` do grupo 08 |
+| **Total de operações** | 169 (164 dos 12 grupos + 5 de plataforma) — código local e produção estão idênticos |
 
-> **Atenção — uma rota ainda não está em produção.** O `GET /unlock-stats` do
-> grupo 08 está implementado e testado no código, mas o deploy deste commit
-> ainda não ocorreu. Em produção ele responde `404` até a publicação. O
-> `GET /stats` (rota compartilhada) devolve exatamente o mesmo payload e já
-> funciona. Já o `GET /unlock-history` funciona normalmente em produção. Veja
-> [Grupo 08](#grupo-08--desbloqueio-em-confiança) e o
-> [Apêndice F](#apêndice-f--pendências-conhecidas).
+> **Contrato local e produção estão em sincronia.** As 169 operações de labs
+> deste guia respondem em produção. O grupo 08 tem rota própria e rota
+> compartilhada para os dois recursos, e ambas devolvem JSON idêntico:
+> `unlock-stats` ≡ `stats` e `unlock-history` ≡ `history`. Prefira os paths
+> próprios em código novo. Veja [Grupo 08](#grupo-08--desbloqueio-em-confiança).
 
 ---
 
@@ -1172,7 +1170,7 @@ https://tool-automation-fiap-production.up.railway.app/api/v1/labs/groups/08
 | `POST` | `/unlock-requests/{request_id}/promise` | Registrar promessa de pagamento | não |
 | `POST` | `/unlock-requests/{request_id}/decide` | Aplicar regra determinística de decisão | não |
 | `POST` | `/unlock-requests/{request_id}/provision` | Provisionar quando liberado | não |
-| `GET` | `/unlock-stats` | Agregados de desbloqueio ⚠️ **ainda não em produção** | não |
+| `GET` | `/unlock-stats` | Agregados de desbloqueio | não |
 | `GET` | `/instructor/unlock-requests/{request_id}` | Solicitação com decisão esperada | **sim** |
 | `GET` | `/contracts` | Listar contratos | não |
 | `GET` | `/contracts/{customer_id}/summary` | Contrato, faturas e última consulta de crédito | não |
@@ -1182,14 +1180,12 @@ https://tool-automation-fiap-production.up.railway.app/api/v1/labs/groups/08
 
 **Total: 14 operações.**
 
-> ⚠️ **Uma rota deste grupo ainda não está em produção.**
-> `GET /unlock-stats` está no código e nos testes, mas o deploy deste commit
-> ainda não saiu: em produção responde `404`. Já o `GET /unlock-history`
-> funciona normalmente em produção. A rota compartilhada `GET /stats`
-> responde ao grupo 08 com o mesmo payload de `unlock-stats` e funciona hoje.
-> Após a publicação, os pares devolvem JSON idêntico (verificado:
-> `unlock-stats` ≡ `stats` e `unlock-history` ≡ `history`). Prefira os paths
-> próprios em código novo.
+> Este grupo tem rota própria e rota compartilhada para os dois recursos, e
+> ambas respondem em produção com JSON idêntico (verificado em produção:
+> `unlock-stats` ≡ `stats` e `unlock-history` ≡ `history`). A rota
+> compartilhada `GET /stats` e a `GET /history` respondem pelo `group_id` da
+> URL e devolvem `404` para qualquer outro grupo. Prefira os paths próprios em
+> código novo.
 
 ### Como utilizar a API
 
@@ -2060,7 +2056,7 @@ No grupo 08, cada par tem uma rota própria equivalente:
 
 | Grupo 08 | Path próprio | Rota compartilhada | Situação |
 |---|---|---|---|
-| agregados | `GET /unlock-stats` | `GET /stats` | própria ainda não em produção |
+| agregados | `GET /unlock-stats` | `GET /stats` | própria em produção |
 | histórico | `GET /unlock-history` | `GET /history` | própria já em produção |
 
 Os demais paths com sufixo de grupo: `/patient-messages` (10),
@@ -2075,14 +2071,13 @@ Os demais paths com sufixo de grupo: `/patient-messages` (10),
 
 | # | Onde | Sintoma | Impacto |
 |---|---|---|---|
-| 1 | `GET /api/v1/labs/groups/08/unlock-stats` | **404 em produção** — a rota existe no código e nos testes, mas o deploy deste commit ainda não saiu | Use `GET /api/v1/labs/groups/08/stats`, que devolve o mesmo payload |
-| 2 | `POST /api/v1/labs/groups/11/emails/{email_id}/evidence` | Enviar um `IC` já existente responde **500** em vez de **409** | `IC` tem restrição `UNIQUE` no banco e o handler não trata `IntegrityError`. Use sempre um `IC` inédito |
-| 3 | `POST /api/v1/labs/groups/12/submissions` | `feature_schema` sem `nullable` (ou sem `dtype`) em cada item responde **500** | O OpenAPI declara `feature_schema` como `list[{}]`, então o Swagger não avisa. Sempre envie `feature_name`, `dtype` e `nullable` |
-| 4 | Configuração Railway | `ENVIRONMENT=development` e `DATABASE_URL` em SQLite sem volume confirmado | Ver [0.9](#09-variáveis-de-ambiente-em-produção) |
+| 1 | `POST /api/v1/labs/groups/11/emails/{email_id}/evidence` | Enviar um `IC` já existente responde **500** em vez de **409** | `IC` tem restrição `UNIQUE` no banco e o handler não trata `IntegrityError`. Use sempre um `IC` inédito |
+| 2 | `POST /api/v1/labs/groups/12/submissions` | `feature_schema` sem `nullable` (ou sem `dtype`) em cada item responde **500** | O OpenAPI declara `feature_schema` como `list[{}]`, então o Swagger não avisa. Sempre envie `feature_name`, `dtype` e `nullable` |
+| 3 | Configuração Railway | `ENVIRONMENT=development` e `DATABASE_URL` em SQLite sem volume confirmado | Ver [0.9](#09-variáveis-de-ambiente-em-produção) |
 
-Os itens 2 e 3 são defeitos de tratamento de erro (exceções de integridade de
-dado não tratados viram 500 em vez de 4xx), não problemas de contrato. O item
-1 é apenas publicação pendente.
+Os itens 1 e 2 são defeitos de tratamento de erro (exceções de integridade de
+dado não tratadas viram 500 em vez de 4xx), não problemas de contrato. As 169
+operações de labs deste guia já respondem em produção.
 
 ---
 
