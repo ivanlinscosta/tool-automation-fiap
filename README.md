@@ -124,6 +124,27 @@ curl -X POST -H "Idempotency-Key: unique-uuid-123" -H "Content-Type: application
 - [Referência da API](docs/API_REFERENCE.md) - Detalhes técnicos de cada endpoint
 - [Modelo de Dados](docs/DATA_MODEL.md) - Estrutura das tabelas e relacionamentos
 - [Cenários de Laboratório](docs/LAB_SCENARIOS.md) - Guia de exercícios práticos
+- [Guia dos Laboratórios de Workflow](docs/student-workflow-labs.md) - Convenções dos 12 labs de `/api/v1/labs`
+
+## Laboratórios de Workflow
+
+Além da API original, o projeto expõe 12 laboratórios educacionais determinísticos
+sob o prefixo `/api/v1/labs` — prospecção, ingestão de planilhas, RevOps, suporte,
+purchase order, cobrança, desbloqueio, onboarding, clínica, restore e MLOps.
+
+| Recurso | Endpoint |
+|---------|----------|
+| Convenções e cenários de falha | `GET /api/v1/labs/meta` |
+| Status de cada grupo | `GET /api/v1/labs/groups` |
+| Modelos e relações de um grupo | `GET /api/v1/labs/groups/{group_id}/models` |
+| Verificação de integridade | `GET /api/v1/labs/groups/{group_id}/integrity` |
+| Reset determinístico | `POST /api/v1/labs/reset` |
+
+Todo endpoint aceita `?scenario=` (`success`, `validation_error`, `not_found`,
+`duplicate`, `timeout`, `server_error`) para simular falhas. As respostas de
+instrutor, que expõem a resposta correta dos exercícios, exigem o header
+`X-Instructor-Key`.
+
 
 ## Comandos Úteis
 
