@@ -9688,6 +9688,62 @@ paths:
             application/json:
               example:
                 detail: Simulated validation error
+  /api/v1/labs/groups/{group_id}/unlock-stats:
+    get:
+      tags:
+      - Lab - Group 08
+      summary: Aggregate unlock requests by status and unlock decisions by type
+      operationId: labs_group08_stats
+      parameters:
+      - name: group_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Lab group identifier. Accepts 1-12, 01-12 or group-1..group-12.
+          examples:
+          - '01'
+          - group-01
+          title: Group Id
+        description: Lab group identifier. Accepts 1-12, 01-12 or group-1..group-12.
+      - name: scenario
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 'Controlled failure injection: success, validation_error, not_found, duplicate,
+            timeout, server_error.'
+          examples:
+          - success
+          - duplicate
+          - timeout
+          title: Scenario
+        description: 'Controlled failure injection: success, validation_error, not_found, duplicate, timeout,
+          server_error.'
+      - name: X-Lab-Group
+        in: header
+        required: false
+        schema:
+          type: string
+          description: Student or team identifier used for audit events.
+          default: anonymous
+          title: X-Lab-Group
+        description: Student or team identifier used for audit events.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnlockStatsResponse'
+        '422':
+          description: Simulated validation error requested via ?scenario=validation_error
+          content:
+            application/json:
+              example:
+                detail: Simulated validation error
   /api/v1/labs/groups/{group_id}/instructor/unlock-requests/{request_id}:
     get:
       tags:
@@ -20015,6 +20071,23 @@ components:
       - status
       - requested_at
       title: UnlockRequestResponse
+    UnlockStatsResponse:
+      properties:
+        requests_by_status:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Requests By Status
+        decisions_by_type:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Decisions By Type
+      type: object
+      required:
+      - requests_by_status
+      - decisions_by_type
+      title: UnlockStatsResponse
     ValidationError:
       properties:
         loc:

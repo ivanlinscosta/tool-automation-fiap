@@ -7279,6 +7279,59 @@
      "name": "Group 08",
      "item": [
       {
+       "name": "Aggregate unlock requests by status and unlock decisions by type",
+       "event": [
+        {
+         "listen": "test",
+         "script": {
+          "type": "text/javascript",
+          "exec": [
+           "pm.test('respondeu', function () {",
+           "  pm.expect([200, 422]).to.include(pm.response.code);",
+           "});"
+          ]
+         }
+        }
+       ],
+       "request": {
+        "method": "GET",
+        "header": [
+         {
+          "key": "X-Lab-Group",
+          "value": "grupo-01",
+          "type": "text"
+         },
+         {
+          "key": "X-Request-ID",
+          "value": "req-{{$guid}}",
+          "type": "text"
+         }
+        ],
+        "url": {
+         "raw": "{{baseUrl}}/api/v1/labs/groups/{group_id}/unlock-stats",
+         "host": [
+          "{{baseUrl}}"
+         ],
+         "path": [
+          "api",
+          "v1",
+          "labs",
+          "groups",
+          ":group_id",
+          "unlock-stats"
+         ],
+         "query": [
+          {
+           "key": "scenario",
+           "value": "",
+           "description": "Controlled failure injection: success, validation_error, not_found, duplicate, timeout, server_error."
+          }
+         ]
+        },
+        "description": ""
+       }
+      },
+      {
        "name": "Apply the deterministic unlock decision rule and persist the decision",
        "event": [
         {
