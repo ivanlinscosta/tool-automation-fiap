@@ -163,16 +163,21 @@ nao ficar ambiguo:
 |------|-----------------|
 | `/messages` | 05 |
 | `/patient-messages` | 10 |
-| `/stats` | 05 |
+| `/stats` | 05 e 08 (rota compartilhada) |
 | `/clinic-stats` | 10 |
-| `/unlock-stats` | 08 |
 | `/onboarding-stats` | 09 |
 | `/evidence-stats` | 11 |
 | `/model-stats` | 12 |
-| `/history` | 07 |
+| `/history` | 07 e 08 (rota compartilhada) |
 | `/unlock-history` | 08 |
 | `/notifications` | 06 |
 | `/model-notifications` | 12 |
+
+Duas rotas são compartilhadas e respondem por dois grupos, decidindo pelo
+`{group_id}` da URL: `GET /stats` (05 e 08) e `GET /history` (07 e 08). Chamar
+`/stats` com um grupo que nao os possua devolve 404. O grupo 08 tem os
+agregados em `/stats` e o historico tanto em `/history` quanto em
+`/unlock-history`.
 
 Use sempre o Swagger do grupo para descobrir o path exato.
 
