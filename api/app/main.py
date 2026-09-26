@@ -15,6 +15,8 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 
+logger = logging.getLogger(__name__)
+
 
 def _get_cors_origins() -> list[str]:
     if settings.CORS_ORIGINS.strip() == "*":
@@ -22,10 +24,25 @@ def _get_cors_origins() -> list[str]:
     return [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
 
 
+def _seed_lab_groups_on_startup() -> None:
+    from .db.database import SessionLocal
+    from .labs.registry import LAB_GROUPS, ensure_group_seeded
+
+    with SessionLocal() as session:
+        for group_id in sorted(LAB_GROUPS):
+            try:
+                ensure_group_seeded(session, group_id)
+            except Exception:
+                session.rollback()
+                logger.exception("Startup seed failed for lab group %02d", group_id)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
     seed_data()
+    if settings.LABS_SEED_ON_STARTUP:
+        _seed_lab_groups_on_startup()
     yield
 
 
@@ -58,6 +75,7 @@ from .api.routes.health import router as health_router
 from .api.routes.interactions import router as interactions_router
 from .api.routes.inventory import router as inventory_router
 from .api.routes.lab import router as lab_router
+from .api.routes.labs import router as labs_router
 from .api.routes.logistics import router as logistics_router
 from .api.routes.meta import router as meta_router
 from .api.routes.orders import router as orders_router
@@ -85,3 +103,4 @@ app.include_router(interactions_router)
 app.include_router(events_router)
 app.include_router(meta_router)
 app.include_router(lab_router)
+app.include_router(labs_router)
