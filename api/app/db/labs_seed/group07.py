@@ -46,24 +46,26 @@ def seed_group(db: Session) -> None:
     db.add_all(configs)
     db.flush()
 
-    bucket_days = [0, 0, 0, 3, 8, 12, 18, 27, 36, 52, 74, 108, 140]
+    bucket_days = [1, 2, 4, 7, 12, 18, 27, 40, 60, 85, 120, 165, 200]
+    settled_slots = {0, 1, 2}
     receivables: list[Receivable] = []
     histories: list[CollectionHistory] = []
     total = LAB_MIN_RECORDS + 150
 
     for index in range(total):
-        dias_atraso = bucket_days[index % len(bucket_days)]
+        slot = index % len(bucket_days)
+        dias_atraso = bucket_days[slot]
         customer_document = cpf(rng, valid=index % 10 != 0) if index % 4 != 0 else cnpj(rng, valid=index % 9 != 0)
         customer_phone = None if index % 11 == 0 else brazilian_phone(rng)
         valor = money(rng, 120.0, 28000.0)
         data_vencimento = min(LAB_NOW, previous_moment(rng, LAB_NOW, min_minutes=60, max_days=220)) - timedelta(days=dias_atraso)
         data_emissao = previous_moment(rng, data_vencimento, min_minutes=60, max_days=400)
 
-        if dias_atraso == 0 and index % 5 == 0:
+        if slot in settled_slots and index % 5 == 0:
             status = "PAGO"
-        elif dias_atraso == 0 and index % 8 == 0:
+        elif slot in settled_slots and index % 8 == 0:
             status = "CANCELADO"
-        elif dias_atraso == 0:
+        elif slot in settled_slots:
             status = "ABERTO"
         else:
             status = "VENCIDO"

@@ -44,6 +44,9 @@ def test_group07_filters_search_and_sort(client: TestClient) -> None:
     assert all(item["dias_atraso"] > 0 for item in overdue["items"])
     faixa = _list_receivables(client, faixa="16-30", limit=20)
     assert all(16 <= item["dias_atraso"] <= 30 for item in faixa["items"])
+    lowest = _list_receivables(client, sort="dias_atraso", order="asc", limit=1)["items"][0]["dias_atraso"]
+    highest = _list_receivables(client, sort="dias_atraso", order="desc", limit=1)["items"][0]["dias_atraso"]
+    assert 1 <= lowest <= highest <= 200
     searched = _list_receivables(client, search="TIT-", limit=5)
     assert searched["meta"]["total"] > 0
     invalid = client.get(f"{BASE}/07/receivables", params={"sort": "foo"}, headers=_headers())
